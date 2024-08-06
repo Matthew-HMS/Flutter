@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'api_prompt.dart';
 
 const Color backgroundColor = Color.fromARGB(255, 61, 61, 61);
 
@@ -9,25 +10,30 @@ class PromptManagementPage extends StatefulWidget {
 
 class _PromptManagementPageState extends State<PromptManagementPage> {
   TextEditingController _searchController = TextEditingController();
-  List<Map<String, dynamic>> _items = [
-    {'title': '生成英文講稿', 'description': '幫我生成英文講稿', 'isStarred': false},
-    {'title': '本堂課程介紹', 'description': '幫我依據這頁的內容生成本堂課的課程介紹', 'isStarred': false},
-    {'title': '生成示意圖', 'description': '幫我依據這頁的內容生成示意圖', 'isStarred': false},
-    {'title': '產生隨堂測驗', 'description': '幫我依據這頁的內容產生隨堂測驗', 'isStarred': false},
-    {'title': '指定文字風格、語氣', 'description': '幫我用...的文字風格來生成英文講稿', 'isStarred': false},
-  ];
-
-  List<Map<String, dynamic>> _filteredItems = [];
+  List<Prompt> _items = []; // 改成 List<Prompt>
+  List<Prompt> _filteredItems = [];
   final GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
 
   @override
   void initState() {
     super.initState();
-    _filteredItems = List.from(_items); // Ensure _filteredItems is a copy of _items
     _searchController.addListener(() {
       print('Current query: ${_searchController.text}'); // Debug print statement
       _filterItems(_searchController.text);
     });
+    _fetchPrompts();
+  }
+
+  Future<void> _fetchPrompts() async {
+    try {
+      List<Prompt> prompts = await ApiService.fetchModels();
+      setState(() {
+        _items = prompts;
+        _filteredItems = List.from(_items);
+      });
+    } catch (e) {
+      print(e);
+    }
   }
 
   void _filterItems(String query) {
@@ -36,7 +42,7 @@ class _PromptManagementPageState extends State<PromptManagementPage> {
         _filteredItems = List.from(_items); // Reset to all items
       } else {
         _filteredItems = _items.where((item) {
-          return item['title'].contains(query) || item['description'].contains(query);
+          return item.name.contains(query) || item.content.contains(query);
         }).toList();
       }
     });
@@ -45,7 +51,7 @@ class _PromptManagementPageState extends State<PromptManagementPage> {
   void _starItem(int index) {
     setState(() {
       var starredItem = _filteredItems[index];
-      bool isStarred = starredItem['isStarred'];
+      bool isStarred = starredItem.isStarred;
       int removeIndex = index;
       int insertIndex = isStarred ? _filteredItems.length - 1 : 0;
 
@@ -55,26 +61,22 @@ class _PromptManagementPageState extends State<PromptManagementPage> {
         (context, animation) => _buildItem(starredItem, animation, removeIndex),
       );
 
-      starredItem['isStarred'] = !isStarred;
+      starredItem.isStarred = !isStarred;
       _filteredItems.insert(insertIndex, starredItem);
       _listKey.currentState?.insertItem(insertIndex);
 
       // Update the original list
-      var originalIndex = _items.indexWhere((item) => item['title'] == starredItem['title']);
+      var originalIndex = _items.indexWhere((item) => item.prompt_id == starredItem.prompt_id);
       if (originalIndex != -1) {
-        _items.removeAt(originalIndex);
-        if (starredItem['isStarred']) {
-          _items.insert(0, starredItem); // Move to top if starred
-        } else {
-          _items.add(starredItem); // Move to last if unstarred
-        }
+        _items[originalIndex].isStarred = starredItem.isStarred; // 更新原始列表中的星標狀態
       }
     });
   }
 
   void _editItem(int index) {
-    TextEditingController titleController = TextEditingController(text: _filteredItems[index]['title']);
-    TextEditingController descriptionController = TextEditingController(text: _filteredItems[index]['description']);
+    print("edit prompt: "+_filteredItems[index].prompt_id.toString());
+    TextEditingController titleController = TextEditingController(text: _filteredItems[index].name);
+    TextEditingController descriptionController = TextEditingController(text: _filteredItems[index].content);
     showDialog(
       context: context,
       builder: (context) {
@@ -101,19 +103,40 @@ class _PromptManagementPageState extends State<PromptManagementPage> {
               child: Text('取消'),
             ),
             TextButton(
-              onPressed: () {
-                setState(() {
-                  _filteredItems[index]['title'] = titleController.text;
-                  _filteredItems[index]['description'] = descriptionController.text;
+              onPressed: () async {
+                var editedPrompt = Prompt(
+                  prompt_id: _filteredItems[index].prompt_id,
+                  name: titleController.text,
+                  content: descriptionController.text,
+                  user_id: 1, // 預設為 1
+                  isStarred: _filteredItems[index].isStarred, // 保持星標狀態
+                );
+                // setState(() {
+                  
+                //   _filteredItems[index] = editedPrompt;
 
-                  // Update the original list
-                  var originalIndex = _items.indexWhere((item) => item['title'] == _filteredItems[index]['title']);
-                  if (originalIndex != -1) {
-                    _items[originalIndex]['title'] = titleController.text;
-                    _items[originalIndex]['description'] = descriptionController.text;
-                  }
-                });
-                Navigator.of(context).pop();
+                //   // Update the original list
+                //   var originalIndex = _items.indexWhere((item) => item.prompt_id == editedPrompt.prompt_id);
+                //   if (originalIndex != -1) {
+                //     _items[originalIndex] = editedPrompt;
+                //   }
+                // });
+                // Navigator.of(context).pop();
+                try {
+                  await ApiService.editPrompt(editedPrompt); // 發送 PATCH 請求
+                  setState(() {
+                    _filteredItems[index] = editedPrompt;
+
+                    // Update the original list
+                    var originalIndex = _items.indexWhere((item) => item.prompt_id == editedPrompt.prompt_id);
+                    if (originalIndex != -1) {
+                      _items[originalIndex] = editedPrompt;
+                    }
+                  });
+                  Navigator.of(context).pop();
+                } catch (e) {
+                  print(e);
+                }
               },
               child: Text('儲存'),
             ),
@@ -122,6 +145,7 @@ class _PromptManagementPageState extends State<PromptManagementPage> {
       },
     );
   }
+
 
   void _addItem() {
     TextEditingController titleController = TextEditingController();
@@ -152,18 +176,29 @@ class _PromptManagementPageState extends State<PromptManagementPage> {
               child: Text('取消'),
             ),
             TextButton(
-              onPressed: () {
-                setState(() {
-                  var newItem = {
-                    'title': titleController.text,
-                    'description': descriptionController.text,
-                    'isStarred': false
-                  };
-                  _items.add(newItem);
-                  _filteredItems.add(newItem);
-                  _listKey.currentState?.insertItem(_filteredItems.length - 1);
-                });
-                Navigator.of(context).pop();
+              onPressed: () async {
+                try {
+                  await ApiService.createPrompt(titleController.text, descriptionController.text);
+                  // var newItem = Prompt(
+                  //   prompt_id: 0, // ID會在API創建後由後端返回，這裡先給一個臨時值
+                  //   name: titleController.text,
+                  //   content: descriptionController.text,
+                  // );
+                  // setState(() {
+                  //   _items.add(newItem);
+                  //   _filteredItems.add(newItem);
+                  //   _listKey.currentState?.insertItem(_filteredItems.length - 1);
+                  // });
+                  // Navigator.of(context).pop();
+                  List<Prompt> prompts = await ApiService.fetchModels();
+                  setState(() {
+                    _items = prompts;
+                    _filteredItems = List.from(_items);
+                  });
+                  Navigator.of(context).pop();
+                } catch (e) {
+                  print(e);
+                }
               },
               child: Text('新增'),
             ),
@@ -173,30 +208,37 @@ class _PromptManagementPageState extends State<PromptManagementPage> {
     );
   }
 
-  void _deleteItem(int index) {
-    setState(() {
-      // Remove the item from the filtered list
-      var deletedItem = _filteredItems.removeAt(index);
-      _listKey.currentState?.removeItem(
-        index,
-        (context, animation) => _buildItem(deletedItem, animation, index),
-      );
-      // Remove the item from the original list
-      var originalIndex = _items.indexWhere((item) => item['title'] == deletedItem['title']);
-      if (originalIndex != -1) {
-        _items.removeAt(originalIndex);
-      }
-    });
+  void _deleteItem(int index) async {
+    print("edit prompt: "+_filteredItems[index].prompt_id.toString());
+    try {
+      var deletedItem = _filteredItems[index];
+      await ApiService.deletePrompt(deletedItem.prompt_id);
+      setState(() {
+        _filteredItems.removeAt(index);
+        _listKey.currentState?.removeItem(
+          index,
+          (context, animation) => _buildItem(deletedItem, animation, index),
+        );
+
+        // Remove the item from the original list
+        var originalIndex = _items.indexWhere((item) => item.prompt_id == deletedItem.prompt_id);
+        if (originalIndex != -1) {
+          _items.removeAt(originalIndex);
+        }
+      });
+    } catch (e) {
+      print(e);
+    }
   }
 
-  Widget _buildItem(Map<String, dynamic> item, Animation<double>? animation, int index) {
+  Widget _buildItem(Prompt item, Animation<double>? animation, int index) {
     Widget listItem = ListTile(
       title: Text(
-        item['title'],
+        item.name,
         style: TextStyle(color: Colors.white, fontSize: 18.0),
       ),
       subtitle: Text(
-        item['description'],
+        item.content,
         style: TextStyle(color: Colors.white70, fontSize: 14.0),
       ),
       trailing: Row(
@@ -204,7 +246,7 @@ class _PromptManagementPageState extends State<PromptManagementPage> {
         children: [
           IconButton(
             icon: Icon(
-              item['isStarred'] ? Icons.star : Icons.star_border,
+              item.isStarred ? Icons.star : Icons.star_border,
               color: Colors.white54,
             ),
             onPressed: () => _starItem(index),
@@ -229,6 +271,7 @@ class _PromptManagementPageState extends State<PromptManagementPage> {
       return listItem;
     }
   }
+
 
   @override
   void dispose() {
@@ -288,11 +331,18 @@ class _PromptManagementPageState extends State<PromptManagementPage> {
                         style: TextStyle(color: Colors.white),
                       ),
                     )
-                  : AnimatedList(
-                      key: _listKey,
-                      initialItemCount: _filteredItems.length,
-                      itemBuilder: (context, index, animation) {
-                        return _buildItem(_filteredItems[index], animation, index);
+                  // animate lead to error
+                  // : AnimatedList(
+                  //     key: _listKey,
+                  //     initialItemCount: _filteredItems.length,
+                  //     itemBuilder: (context, index, animation) {
+                  //       return _buildItem(_filteredItems[index], animation, index);
+                  //     },
+                  //   ),
+                  : ListView.builder(
+                      itemCount: _filteredItems.length,
+                      itemBuilder: (context, index) {
+                        return _buildItem(_filteredItems[index], null, index);
                       },
                     ),
             ),
