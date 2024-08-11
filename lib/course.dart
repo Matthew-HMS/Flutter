@@ -6,6 +6,8 @@ const Color backgroundColor = Color.fromARGB(255, 61, 61, 61);
 class CourseManagementPage extends StatefulWidget {
   const CourseManagementPage({super.key});
 
+  get fileManager => null;
+
   @override
   CourseManagementPageState createState() => CourseManagementPageState();
 }
@@ -188,7 +190,6 @@ class _CourseTileState extends State<CourseTile> {
               courseName: _title,
               files: widget.courseManager.getFilesForCourse(_title),
               otherFiles: widget.courseManager.getOtherFilesForCourse(_title),
-              courseManager: widget.courseManager,
             ),
           ),
         );
