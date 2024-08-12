@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'file.dart';
+import 'api_course.dart';
 
 const Color backgroundColor = Color.fromARGB(255, 61, 61, 61);
 
 class CourseManagementPage extends StatefulWidget {
   const CourseManagementPage({super.key});
+
+  get fileManager => null;
 
   @override
   CourseManagementPageState createState() => CourseManagementPageState();
@@ -21,20 +24,69 @@ class CourseManagementPageState extends State<CourseManagementPage> {
     super.initState();
     // Add the AddCourseTile initially
     courseTiles.add(AddCourseTile(onAddCourse: promptCourseName));
+    _fetchCourses();
   }
 
-  void addCourseTile(String courseName) {
-    setState(() {
-      courseTiles.insert(
-        courseTiles.length,
-        CourseTile(
-          title: courseName,
-          courseManager: this,
-        ),
-      );
-      courseFiles[courseName] = []; // Initialize the file list for the new course
-      otherCourseFiles[courseName] = []; // Initialize the other file list for the new course
-    });
+  Future<void> _fetchCourses() async {
+    try {
+      List<Course> courses = await ApiService.fetchModels();
+      setState(() {
+        courseTiles = courses.map((course) {
+          return CourseTile(
+            title: course.name,
+            class_id: course.class_id,
+            courseManager: this,
+          );
+        }).toList();
+      });
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  void addCourseTile(String courseName) async {
+    // setState(() {
+    //   courseTiles.insert(
+    //     courseTiles.length,
+    //     CourseTile(
+    //       title: courseName,
+    //       courseManager: this,
+    //     ),
+    //   );
+    //   courseFiles[courseName] = []; // Initialize the file list for the new course
+    //   otherCourseFiles[courseName] = []; // Initialize the other file list for the new course
+    // });
+    try {
+      final response = await ApiService.createCourse(courseName, '');
+      if (response.statusCode == 201) {
+        _fetchCourses(); // 新增成功後重新載入課程
+      }
+    } catch (e) {
+      print('Failed to create course: $e');
+    }
+  }
+
+  void deleteCourseTile(int class_id) async {
+    try {
+      final response = await ApiService.deleteCourse(class_id);
+      if (response.statusCode == 204) {
+        _fetchCourses(); // 刪除成功後重新載入課程
+      }
+    } catch (e) {
+      print('Failed to delete course: $e');
+    }
+  }
+
+  void updateCourseTileTitle(int class_id, String newTitle) async {
+    Course course = Course(class_id: class_id, name: newTitle, user_id: 1);
+    try {
+      final response = await ApiService.editCourse(course);
+      if (response.statusCode == 200) {
+        _fetchCourses(); // 更新成功後重新載入課程
+      }
+    } catch (e) {
+      print('Failed to update course: $e');
+    }
   }
 
   void addFileToCourse(String courseName, String fileName) {
@@ -57,23 +109,23 @@ class CourseManagementPageState extends State<CourseManagementPage> {
     return otherCourseFiles[courseName] ?? [];
   }
 
-  void updateCourseTileTitle(String oldTitle, String newTitle) {
-    setState(() {
-      for (var tile in courseTiles) {
-        if (tile is CourseTile && tile.title == oldTitle) {
-          tile.title = newTitle;
-          break;
-        }
-      }
-      // Update the keys in the maps
-      if (courseFiles.containsKey(oldTitle)) {
-        courseFiles[newTitle] = courseFiles.remove(oldTitle)!;
-      }
-      if (otherCourseFiles.containsKey(oldTitle)) {
-        otherCourseFiles[newTitle] = otherCourseFiles.remove(oldTitle)!;
-      }
-    });
-  }
+  // void updateCourseTileTitle(String oldTitle, String newTitle) {
+  //   setState(() {
+  //     for (var tile in courseTiles) {
+  //       if (tile is CourseTile && tile.title == oldTitle) {
+  //         tile.title = newTitle;
+  //         break;
+  //       }
+  //     }
+  //     // Update the keys in the maps
+  //     if (courseFiles.containsKey(oldTitle)) {
+  //       courseFiles[newTitle] = courseFiles.remove(oldTitle)!;
+  //     }
+  //     if (otherCourseFiles.containsKey(oldTitle)) {
+  //       otherCourseFiles[newTitle] = otherCourseFiles.remove(oldTitle)!;
+  //     }
+  //   });
+  // }
 
   void promptCourseName() {
     if (!mounted) return;
@@ -107,17 +159,17 @@ class CourseManagementPageState extends State<CourseManagementPage> {
     );
   }
 
-  void deleteCourseTile(String courseName) {
-    setState(() {
-      courseTiles.remove(
-        courseTiles.firstWhere(
-          (element) => element is CourseTile && element.title == courseName,
-        ),
-      );
-      courseFiles.remove(courseName);
-      otherCourseFiles.remove(courseName);
-    });
-  }
+  // void deleteCourseTile(String courseName) {
+  //   setState(() {
+  //     courseTiles.remove(
+  //       courseTiles.firstWhere(
+  //         (element) => element is CourseTile && element.title == courseName,
+  //       ),
+  //     );
+  //     courseFiles.remove(courseName);
+  //     otherCourseFiles.remove(courseName);
+  //   });
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -149,10 +201,11 @@ class CourseManagementPageState extends State<CourseManagementPage> {
 
 class CourseTile extends StatefulWidget {
   String title;
+  int class_id;
   final String? imageUrl;
   final CourseManagementPageState courseManager;
 
-  CourseTile({required this.title, this.imageUrl, required this.courseManager});
+  CourseTile({required this.title, required this.class_id, this.imageUrl, required this.courseManager});
 
   @override
   _CourseTileState createState() => _CourseTileState();
@@ -188,7 +241,6 @@ class _CourseTileState extends State<CourseTile> {
               courseName: _title,
               files: widget.courseManager.getFilesForCourse(_title),
               otherFiles: widget.courseManager.getOtherFilesForCourse(_title),
-              courseManager: widget.courseManager,
             ),
           ),
         );
@@ -231,7 +283,7 @@ class _CourseTileState extends State<CourseTile> {
                       if (newValue == '編輯名稱') {
                         showEditDialog(context);
                       } else if (newValue == '刪除課程') {
-                        widget.courseManager.deleteCourseTile(_title);
+                        widget.courseManager.deleteCourseTile(widget.class_id);
                       }
                     },
                     itemBuilder: (BuildContext context) {
@@ -280,7 +332,7 @@ class _CourseTileState extends State<CourseTile> {
               onPressed: () {
                 setState(() {
                   String newTitle = _controller.text;
-                  widget.courseManager.updateCourseTileTitle(_title, newTitle);
+                  widget.courseManager.updateCourseTileTitle(widget.class_id, newTitle);
                   _title = newTitle;
                 });
                 Navigator.of(context).pop();
