@@ -32,7 +32,7 @@ class _PromptManagementPageState extends State<PromptManagementPage> {
         _filteredItems = List.from(_items);
       });
     } catch (e) {
-      print(e);
+      print('Failed to fetchPrompts: $e');
     }
   }
 
@@ -135,7 +135,7 @@ class _PromptManagementPageState extends State<PromptManagementPage> {
                   });
                   Navigator.of(context).pop();
                 } catch (e) {
-                  print(e);
+                  print('Failed to editItem: $e');
                 }
               },
               child: Text('儲存'),
@@ -197,7 +197,7 @@ class _PromptManagementPageState extends State<PromptManagementPage> {
                   });
                   Navigator.of(context).pop();
                 } catch (e) {
-                  print(e);
+                  print('Failed to addItem: $e');
                 }
               },
               child: Text('新增'),
@@ -227,7 +227,7 @@ class _PromptManagementPageState extends State<PromptManagementPage> {
         }
       });
     } catch (e) {
-      print(e);
+      print('Failed to deleteItem: $e');
     }
   }
 

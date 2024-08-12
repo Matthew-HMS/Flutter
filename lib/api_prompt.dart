@@ -8,7 +8,7 @@ class ApiService {
     final response = await http.get(Uri.parse(baseUrl + "prompt/"));
 
     if (response.statusCode == 200) {
-      print('Response body: ${response.body}'); // 查看原始 JSON 字串
+      // print('Response body: ${response.body}'); // 查看原始 JSON 字串
       List jsonResponse = json.decode(response.body);
       return jsonResponse.map((model) => Prompt.fromJson(model)).toList();
     } else {
@@ -30,7 +30,7 @@ class ApiService {
     );
 
     if (response.statusCode == 201) {
-      print(response.body);
+      // print(response.body);
       return response;
     } else {
       throw Exception('Failed to create prompt');
@@ -49,7 +49,7 @@ class ApiService {
     );
 
     if (response.statusCode == 204) {
-      print(response.body);
+      // print(response.body);
       return response;
     } else {
       throw Exception('Failed to delete prompt');
@@ -71,7 +71,7 @@ class ApiService {
     );
 
     if (response.statusCode == 200) {
-      print(response.body);
+      // print(response.body);
       return response;
     } else {
       throw Exception('Failed to update prompt');

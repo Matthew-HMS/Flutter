@@ -29,7 +29,7 @@ class ApiService {
     );
 
     if (response.statusCode == 201) {
-      print(response.body);
+      print('Response body: ${response.body}');
       return response;
     } else {
       throw Exception('Failed to create class');
@@ -48,7 +48,7 @@ class ApiService {
     );
 
     if (response.statusCode == 204) {
-      print(response.body);
+      print('Response body: ${response.body}');
       return response;
     } else {
       throw Exception('Failed to delete class');
@@ -62,14 +62,14 @@ class ApiService {
         'Content-Type': 'application/json; charset=UTF-8',
       },
       body: jsonEncode(<String, dynamic>{
-        'classes_id': course.class_id.toString(),
-        'classes_name': course.name,
+        'class_id': course.class_id.toString(),
+        'class_name': course.name,
         'user_user': course.user_id.toString(),
       }),
     );
 
     if (response.statusCode == 200) {
-      print(response.body);
+      print('Response body: ${response.body}');
       return response;
     } else {
       throw Exception('Failed to update class');
@@ -87,8 +87,8 @@ class Course {
 
   factory Course.fromJson(Map<String, dynamic> json) {
     return Course(
-      class_id: json['classes_id'] as int,
-      name: json['classes_name'],
+      class_id: json['class_id'] as int,
+      name: json['class_name'] as String,
       user_id: 1,
     );
   }
