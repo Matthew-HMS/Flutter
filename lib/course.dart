@@ -102,24 +102,6 @@ class CourseManagementPageState extends State<CourseManagementPage> {
     return otherCourseFiles[courseName] ?? [];
   }
 
-  // void updateCourseTileTitle(String oldTitle, String newTitle) {
-  //   setState(() {
-  //     for (var tile in courseTiles) {
-  //       if (tile is CourseTile && tile.title == oldTitle) {
-  //         tile.title = newTitle;
-  //         break;
-  //       }
-  //     }
-  //     // Update the keys in the maps
-  //     if (courseFiles.containsKey(oldTitle)) {
-  //       courseFiles[newTitle] = courseFiles.remove(oldTitle)!;
-  //     }
-  //     if (otherCourseFiles.containsKey(oldTitle)) {
-  //       otherCourseFiles[newTitle] = otherCourseFiles.remove(oldTitle)!;
-  //     }
-  //   });
-  // }
-
   void promptCourseName() {
     if (!mounted) return;
     _courseNameController.clear();
@@ -230,7 +212,7 @@ class _CourseTileState extends State<CourseTile> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => FilePage(
+            builder: (context) => FilePage( // Change to FilePage
               courseName: _title,
               files: widget.courseManager.getFilesForCourse(_title),
               otherFiles: widget.courseManager.getOtherFilesForCourse(_title),
