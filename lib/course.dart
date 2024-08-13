@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'file.dart';
 import 'api_course.dart';
+import 'dart:io';
 
 const Color backgroundColor = Color.fromARGB(255, 61, 61, 61);
 
@@ -49,19 +50,42 @@ class CourseManagementPageState extends State<CourseManagementPage> {
 
   void addCourseTile(String courseName) async {
     try {
-      final response = await ApiService.createCourse(courseName, '');
-      if (response.statusCode == 201) {
-        _fetchCourses(); // 新增成功後重新載入課程
-      }
+      String basePath = Directory.current.path;  // 獲取當前專案的路徑
+      String directoryPath = '$basePath/user_data/$courseName';
+      Directory newDirectory = Directory(directoryPath);
+
+      if (!newDirectory.existsSync()) { // undo: must show alert if directory exists
+        newDirectory.createSync(recursive: true);
+        print('Directory created: $directoryPath');
+        final response = await ApiService.createCourse(courseName, '');
+        if (response.statusCode == 201) {
+          _fetchCourses(); // 新增成功後重新載入課程
+        }
+      } else {
+        print('Directory already exists: $directoryPath');
+      }      
     } catch (e) {
       print('Failed to create course: $e');
     }
   }
 
-  void deleteCourseTile(int class_id) async {
+  void deleteCourseTile(int class_id, String courseName) async {
     try {
       final response = await ApiService.deleteCourse(class_id);
       if (response.statusCode == 204) {
+        // 刪除對應的資料夾及其內容
+        String basePath = Directory.current.path;  // 獲取當前專案的路徑
+        String directoryPath = '$basePath/user_data/$courseName';
+        Directory directoryToDelete = Directory(directoryPath);
+
+        if (directoryToDelete.existsSync()) {
+          // 刪除資料夾及其所有內容
+          directoryToDelete.deleteSync(recursive: true);
+          print('Directory deleted: $directoryPath');
+        } else {
+          print('Directory does not exist: $directoryPath');
+        }
+
         _fetchCourses(); // 刪除成功後重新載入課程
       }
     } catch (e) {
@@ -69,12 +93,23 @@ class CourseManagementPageState extends State<CourseManagementPage> {
     }
   }
 
-  void updateCourseTileTitle(int class_id, String newTitle) async {
-    print('Class ID: $class_id, New Title: $newTitle');
-    Course course = Course(class_id: class_id, name: newTitle, user_id: 1);
+  void updateCourseTileTitle(int class_id, String newCourseName, String CourseName) async {
+    print('Class ID: $class_id, New Title: $newCourseName');
+    Course course = Course(class_id: class_id, name: newCourseName, user_id: 1);
     try {
       final response = await ApiService.editCourse(course);
       if (response.statusCode == 200) {
+        String basePath = Directory.current.path;  // 獲取當前專案的路徑
+        String oldDirectoryPath = '$basePath/user_data/$CourseName';
+        String newDirectoryPath = '$basePath/user_data/$newCourseName';
+
+        Directory oldDirectory = Directory(oldDirectoryPath);
+        if (oldDirectory.existsSync()) {
+          oldDirectory.renameSync(newDirectoryPath);
+          print('Directory renamed from $CourseName to $newCourseName');
+        } else {
+          print('Old directory does not exist: $oldDirectoryPath');
+        }
         _fetchCourses(); // 更新成功後重新載入課程
       }
     } catch (e) {
@@ -133,18 +168,6 @@ class CourseManagementPageState extends State<CourseManagementPage> {
       },
     );
   }
-
-  // void deleteCourseTile(String courseName) {
-  //   setState(() {
-  //     courseTiles.remove(
-  //       courseTiles.firstWhere(
-  //         (element) => element is CourseTile && element.title == courseName,
-  //       ),
-  //     );
-  //     courseFiles.remove(courseName);
-  //     otherCourseFiles.remove(courseName);
-  //   });
-  // }
 
   @override
   Widget build(BuildContext context) {
@@ -258,7 +281,7 @@ class _CourseTileState extends State<CourseTile> {
                       if (newValue == '編輯名稱') {
                         showEditDialog(context);
                       } else if (newValue == '刪除課程') {
-                        widget.courseManager.deleteCourseTile(widget.class_id);
+                        widget.courseManager.deleteCourseTile(widget.class_id, _title);
                       }
                     },
                     itemBuilder: (BuildContext context) {
@@ -307,7 +330,7 @@ class _CourseTileState extends State<CourseTile> {
               onPressed: () {
                 setState(() {
                   String newTitle = _controller.text;
-                  widget.courseManager.updateCourseTileTitle(widget.class_id, newTitle);
+                  widget.courseManager.updateCourseTileTitle(widget.class_id, newTitle, _title);
                   _title = newTitle;
                 });
                 Navigator.of(context).pop();
