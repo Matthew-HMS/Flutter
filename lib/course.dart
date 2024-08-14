@@ -61,6 +61,8 @@ class CourseManagementPageState extends State<CourseManagementPage> {
         if (response.statusCode == 201) {
           _fetchCourses(); // 新增成功後重新載入課程
         }
+        // courseFiles[courseName] = []; // Initialize the file list for the new course
+        // otherCourseFiles[courseName] = []; // Initialize the other file list for the new course
       } else {
         print('Directory already exists: $directoryPath');
       }      
@@ -111,6 +113,18 @@ class CourseManagementPageState extends State<CourseManagementPage> {
           print('Old directory does not exist: $oldDirectoryPath');
         }
         _fetchCourses(); // 更新成功後重新載入課程
+        // for (var tile in courseTiles) {
+        //   if (tile is CourseTile && tile.title == CourseName) {
+        //     tile.title = newCourseName;
+        //     break;
+        //   }
+        // }
+        // if (courseFiles.containsKey(CourseName)) {
+        //   courseFiles[newCourseName] = courseFiles.remove(CourseName)!;
+        // }
+        // if (otherCourseFiles.containsKey(CourseName)) {
+        //   otherCourseFiles[newCourseName] = otherCourseFiles.remove(CourseName)!;
+        // }
       }
     } catch (e) {
       print('Failed to update course: $e');
