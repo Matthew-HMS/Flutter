@@ -8,7 +8,8 @@ class ApiService {
     final response = await http.get(Uri.parse(baseUrl + "classes/"));
 
     if (response.statusCode == 200) {
-      print('Response body: ${response.body}'); // 查看原始 JSON 字串
+      // print('Response body: ${response.body}'); // 查看原始 JSON 字串
+      print('call class fetchModels');
       List jsonResponse = json.decode(response.body);
       return jsonResponse.map((model) => Course.fromJson(model)).toList();
     } else {

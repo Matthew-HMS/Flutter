@@ -100,31 +100,8 @@ class CourseManagementPageState extends State<CourseManagementPage> {
     Course course = Course(class_id: class_id, name: newCourseName, user_id: 1);
     try {
       final response = await ApiService.editCourse(course);
-      if (response.statusCode == 200) {
-        String basePath = Directory.current.path;  // 獲取當前專案的路徑
-        String oldDirectoryPath = '$basePath/user_data/$CourseName';
-        String newDirectoryPath = '$basePath/user_data/$newCourseName';
-
-        Directory oldDirectory = Directory(oldDirectoryPath);
-        if (oldDirectory.existsSync()) {
-          oldDirectory.renameSync(newDirectoryPath);
-          print('Directory renamed from $CourseName to $newCourseName');
-        } else {
-          print('Old directory does not exist: $oldDirectoryPath');
-        }
+      if (response.statusCode == 200) {    
         _fetchCourses(); // 更新成功後重新載入課程
-        // for (var tile in courseTiles) {
-        //   if (tile is CourseTile && tile.title == CourseName) {
-        //     tile.title = newCourseName;
-        //     break;
-        //   }
-        // }
-        // if (courseFiles.containsKey(CourseName)) {
-        //   courseFiles[newCourseName] = courseFiles.remove(CourseName)!;
-        // }
-        // if (otherCourseFiles.containsKey(CourseName)) {
-        //   otherCourseFiles[newCourseName] = otherCourseFiles.remove(CourseName)!;
-        // }
       }
     } catch (e) {
       print('Failed to update course: $e');
@@ -251,6 +228,7 @@ class _CourseTileState extends State<CourseTile> {
           MaterialPageRoute(
             builder: (context) => FilePage( // Change to FilePage
               courseName: _title,
+              class_id: widget.class_id,
               files: widget.courseManager.getFilesForCourse(_title),
               otherFiles: widget.courseManager.getOtherFilesForCourse(_title),
             ),
@@ -345,7 +323,6 @@ class _CourseTileState extends State<CourseTile> {
                 setState(() {
                   String newTitle = _controller.text;
                   widget.courseManager.updateCourseTileTitle(widget.class_id, newTitle, _title);
-                  _title = newTitle;
                 });
                 Navigator.of(context).pop();
               },

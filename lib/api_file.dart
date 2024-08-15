@@ -4,11 +4,13 @@ import 'package:http/http.dart' as http;
 class ApiService {
   static const String baseUrl = "http://127.0.0.1:8000/";
 
-  static Future<List<File>> fetchModels() async {
-    final response = await http.get(Uri.parse(baseUrl + "file/"));
+  static Future<List<File>> fetchModels(int class_id) async {
+    final url = Uri.parse(baseUrl + "file/?class_class=$class_id");
+    final response = await http.get(url);
 
     if (response.statusCode == 200) {
-      // print('Response body: ${response.body}'); // 查看原始 JSON 字串
+      print('call file fetchModels');
+      print('Response body: ${response.body}'); // 查看原始 JSON 字串
       List jsonResponse = json.decode(response.body);
       return jsonResponse.map((model) => File.fromJson(model)).toList();
     } else {
@@ -63,10 +65,10 @@ class ApiService {
         'Content-Type': 'application/json; charset=UTF-8',
       },
       body: jsonEncode(<String, dynamic>{
-        'file_id': file.file_id.toString(),
-        'file_name': file.name,
-        'file_content': file.content,
-        'user_user': file.user_id.toString(),
+        // 'file_id': file.file_id.toString(),
+        // 'file_name': file.name,
+        // 'file_content': file.content,
+        // 'user_user': file.user_id.toString(),
       }),
     );
 
@@ -82,21 +84,18 @@ class ApiService {
 
 class File {
   final int file_id;
-  String name;
-  String content;
-  final int user_id;
-  bool isStarred;
+  String file_name;
+  String file_path;
+  final int class_id;
   
-  File({required this.file_id, required this.name, required this.content,required this.user_id, this.isStarred = false});
+  File({required this.file_id, required this.file_name, required this.file_path,required this.class_id});
 
   factory File.fromJson(Map<String, dynamic> json) {
     return File(
       file_id: json['file_id'] as int,
-      name: json['file_name'],
-      content: json['file_content'],
-      user_id: 1,
-      isStarred: false,
-
+      file_name: json['file_name'],
+      file_path: json['file_path'],
+      class_id: json['class_class'],
     );
   }
 }

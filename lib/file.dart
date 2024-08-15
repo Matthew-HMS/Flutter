@@ -1,17 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:http/http.dart';
 import 'course.dart';
 import 'ppt.dart';
+import 'api_file.dart';
 
 const Color backgroundColor = Color.fromARGB(255, 61, 61, 61);
 
 class FilePage extends StatefulWidget {
   final String courseName;
+  final int class_id;
   final List<String> files;
   final List<String> otherFiles;
 
   FilePage({
     required this.courseName,
+    required this.class_id,
     required this.files,
     required this.otherFiles,
   });
@@ -32,27 +36,34 @@ class _FilePageState extends State<FilePage> {
     super.initState();
     fileTiles.add(AddCourseTile(onAddCourse: pickFile, text: '新增簡報'));
     otherFileTiles.add(AddCourseTile(onAddCourse: pickOtherFile, text: '新增補充教材'));
-    for (var file in widget.files) {
-      fileTiles.add(FileTile(
-        title: file,
-        courseName: widget.courseName,
-        onDelete: deleteFileTile,
-        onUpdate: updateFileName,
-        onTap: () {
-          navigateToPptPage();
-        },
-      ));
-    }
-    for (var otherfile in widget.otherFiles) {
-      otherFileTiles.add(FileTile(
-        title: otherfile,
-        courseName: widget.courseName,
-        onDelete: deleteFileTile,
-        onUpdate: updateFileName,
-        onTap: () {
-          navigateToPptPage();
-        },
-      ));
+    _fetchFiles();
+  }
+
+  Future<void> _fetchFiles() async {
+    try {
+      print('Fetching files...');  // Debug output
+      List<File> files = await ApiService.fetchModels(widget.class_id);
+      print('Fetched files: $files');  // Debug output
+      setState(() {
+        fileTiles = [
+          AddCourseTile(onAddCourse: pickFile),
+          ...files.map((file) {
+            return FileTile(
+              file_id: file.file_id,
+              title: file.file_name,
+              file_path: file.file_path,
+              courseName: widget.courseName,
+              onDelete: deleteFileTile,
+              onUpdate: updateFileName,
+              onTap: () {
+                navigateToPptPage();
+              },
+            );
+          }).toList(),
+        ];
+      });
+    } catch (e) {
+      print('Failed to fetchCourses: $e');
     }
   }
 
@@ -73,37 +84,38 @@ class _FilePageState extends State<FilePage> {
   }
 
   void addFileTile(String fileName) {
-    setState(() {
-      fileTiles.insert(
-        fileTiles.length,
-        FileTile(
-          key: UniqueKey(),
-          title: fileName,
-          courseName: widget.courseName,
-          onDelete: deleteFileTile,
-          onUpdate: updateFileName,
-          onTap: () {
-            navigateToPptPage();
-          },
-        ),
-      );
-      widget.files.add(fileName);
-    });
+    // setState(() {
+    //   fileTiles.insert(
+    //     fileTiles.length,
+    //     FileTile(
+    //       key: UniqueKey(),
+    //       file_id: 
+    //       title: fileName,
+    //       courseName: widget.courseName,
+    //       onDelete: deleteFileTile,
+    //       onUpdate: updateFileName,
+    //       onTap: () {
+    //         navigateToPptPage();
+    //       },
+    //     ),
+    //   );
+    //   widget.files.add(fileName);
+    // });
   }
 
   void addOtherFileTile(String fileName) {
-    setState(() {
-      otherFileTiles.insert(
-        otherFileTiles.length,
-        FileTile(
-          title: fileName,
-          courseName: widget.courseName,
-          onDelete: deleteFileTile,
-          onUpdate: updateFileName,
-        ),
-      );
-      widget.otherFiles.add(fileName);
-    });
+    // setState(() {
+    //   otherFileTiles.insert(
+    //     otherFileTiles.length,
+    //     FileTile(
+    //       title: fileName,
+    //       courseName: widget.courseName,
+    //       onDelete: deleteFileTile,
+    //       onUpdate: updateFileName,
+    //     ),
+    //   );
+    //   widget.otherFiles.add(fileName);
+    // });
   }
 
   void deleteFileTile(String fileName) {
@@ -267,7 +279,9 @@ class _FilePageState extends State<FilePage> {
 }
 
 class FileTile extends StatefulWidget {
+  final int file_id;
   final String title;
+  final String file_path;
   final String courseName;
   final Function(String) onDelete;
   final Function(String, String) onUpdate;
@@ -275,7 +289,9 @@ class FileTile extends StatefulWidget {
 
   FileTile({
     Key? key,
+    required this.file_id,
     required this.title,
+    required this.file_path,
     required this.courseName,
     required this.onDelete,
     required this.onUpdate,
