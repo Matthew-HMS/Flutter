@@ -1,32 +1,26 @@
 import 'dart:math';
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:pdfx/pdfx.dart';
+import 'chat.dart';
 
 const Color backgroundColor = Color.fromARGB(255, 61, 61, 61);
 const Color primaryColor = Color.fromARGB(255, 48, 48, 48);
-List<Widget> messages = [
-  ChatMessage(
-    message: "您好，需要什麼幫助呢？",
-    isSentByMe: false,
-  ),
-  ChatMessage(
-    message: "測試RWD測試RWD測試RWD測試RWD測試RWD測試RWD測試RWD測試RWD測試RWD測試RWD測試RWD測試RWD",
-    isSentByMe: false,
-  ),
-];
 
 class PptPage extends StatefulWidget {
-  const PptPage({super.key});
+  final String filePath;
+
+  const PptPage({Key? key, required this.filePath}) : super(key: key);
 
   @override
   _PptPageState createState() => _PptPageState();
 }
 
 class _PptPageState extends State<PptPage> {
-  void _updateMessages() {
-    setState(() {});
-  }
+  final PdfViewerController _pdfViewerController = PdfViewerController();
+  final ValueNotifier<int> _currentPageNumber = ValueNotifier<int>(1);
+  final ValueNotifier<int> _totalPageNumber = ValueNotifier<int>(0);
 
   @override
   Widget build(BuildContext context) {
@@ -37,10 +31,13 @@ class _PptPageState extends State<PptPage> {
           Expanded(
             flex: 2,
             child: SlideView(
+              filePath: widget.filePath,
               updateMessagesCallback: _updateMessages,
+              pdfViewerController: _pdfViewerController,
+              currentPageNumber: _currentPageNumber,
+              totalPageNumber: _totalPageNumber,
             ),
           ),
-          // VerticalDivider(width: 1, color: Colors.grey),
           Expanded(
             flex: 1,
             child: ChatSidebar(),
@@ -49,14 +46,27 @@ class _PptPageState extends State<PptPage> {
       ),
     );
   }
+
+  void _updateMessages() {
+    setState(() {});
+  }
 }
 
-
 class SlideView extends StatefulWidget {
+  final String filePath;
   final VoidCallback updateMessagesCallback;
+  final PdfViewerController pdfViewerController;
+  final ValueNotifier<int> currentPageNumber;
+  final ValueNotifier<int> totalPageNumber;
 
-  const SlideView({Key? key, required this.updateMessagesCallback}) : super(key: key);
-
+  const SlideView({
+    Key? key,
+    required this.filePath,
+    required this.updateMessagesCallback,
+    required this.pdfViewerController,
+    required this.currentPageNumber,
+    required this.totalPageNumber,
+  }) : super(key: key);
 
   @override
   _SlideViewState createState() => _SlideViewState();
@@ -79,33 +89,23 @@ class _SlideViewState extends State<SlideView> {
     {'title': '指定文字風格、語氣', 'description': '幫我用...的文字風格來生成英文講稿'},
   ];
 
-  final pdfController = PdfController(
-    document: PdfDocument.openAsset('assets/test2.pdf'),
-  );
-
   void _toggleOverlay() {
     if (_overlayEntry == null) {
       final screenHeight = MediaQuery.of(context).size.height;
       final appBarHeight = Scaffold.of(context).appBarMaxHeight ?? 0; //  If using AppBar, subtract its height
       final statusBarHeight = MediaQuery.of(context).padding.top;
-
       final textFieldRenderBox = _textFieldKey.currentContext!.findRenderObject() as RenderBox;
       final textFieldOffset = textFieldRenderBox.localToGlobal(Offset.zero);
       final textFieldHeight = textFieldRenderBox.size.height;
-
       final availableSpaceAbove = textFieldOffset.dy - statusBarHeight - appBarHeight;
       final availableSpaceBelow = screenHeight - textFieldOffset.dy - textFieldHeight;
-
       const int maxVisibleItems = 8;
       final double listItemHeight = 65.0;
       final double listHeight = min(_items.length * listItemHeight, maxVisibleItems * listItemHeight);
-
       // Determine if the overlay should appear above or below the TextField
       final bool shouldShowAbove = listHeight > availableSpaceBelow && listHeight < availableSpaceAbove;
-
       double overlayTop;
-      double overlayHeight;      
-
+      double overlayHeight;
       if (shouldShowAbove) {
         // Show above TextField
         overlayHeight = min(listHeight, availableSpaceAbove);
@@ -115,7 +115,6 @@ class _SlideViewState extends State<SlideView> {
         overlayHeight = min(listHeight, availableSpaceBelow);
         overlayTop = textFieldOffset.dy + textFieldHeight;
       }
-
       _overlayEntry = OverlayEntry(
         builder: (context) => GestureDetector(
           behavior: HitTestBehavior.translucent,
@@ -167,37 +166,15 @@ class _SlideViewState extends State<SlideView> {
           ),
         ),
       );
-
       Overlay.of(context)!.insert(_overlayEntry!);
     } else {
       _removeOverlay();
     }
   }
 
-  // Method to calculate the left position of the overlay to align with the TextField
-  double _calculateOverlayLeftPosition() {
-    final RenderBox renderBox = _textFieldKey.currentContext!.findRenderObject() as RenderBox;
-    final Offset offset = renderBox.localToGlobal(Offset.zero);
-    return offset.dx; // Return the left position for the overlay
-  }
-
-  // Method to calculate the width of the overlay to match the TextField
-  double _calculateOverlayWidth() {
-    final RenderBox renderBox = _textFieldKey.currentContext!.findRenderObject() as RenderBox;
-    return renderBox.size.width; // Return the width of the TextField
-  }
-
   void _removeOverlay() {
     _overlayEntry?.remove();
     _overlayEntry = null;
-  }
-
-  double _calculateOverlayPosition() {
-    final RenderBox renderBox = _textFieldKey.currentContext!.findRenderObject() as RenderBox;
-    final Offset offset = renderBox.localToGlobal(Offset.zero);
-
-    // Return the top position for the overlay, adjust based on your UI
-    return offset.dy - 210; // Example: TextField's Y position - Overlay Height
   }
 
   void _sendMessage() {
@@ -226,13 +203,16 @@ class _SlideViewState extends State<SlideView> {
         Expanded(
           child: Container(
             color: backgroundColor,
-            child: PdfView(
-              controller: pdfController,
-              renderer: (PdfPage page) => page.render(
-                width: page.width,
-                height: page.height,
-                format: PdfPageImageFormat.jpeg,
-              ),
+            child: SfPdfViewer.file(
+              File(widget.filePath),
+              controller: widget.pdfViewerController,
+              pageLayoutMode: PdfPageLayoutMode.single,
+              onPageChanged: (PdfPageChangedDetails details) {
+                widget.currentPageNumber.value = details.newPageNumber;
+              },
+              onDocumentLoaded: (PdfDocumentLoadedDetails details) {
+                widget.totalPageNumber.value = details.document.pages.count;
+              },
             ),
           ),
         ),
@@ -243,32 +223,28 @@ class _SlideViewState extends State<SlideView> {
             children: <Widget>[
               IconButton(
                 icon: Icon(Icons.arrow_back, color: Colors.white),
-                onPressed: () async {
-                  final currentPage = pdfController.page;
-                  if (currentPage > 1) {
-                    pdfController.jumpToPage(currentPage - 1);
-                  }
+                onPressed: () {
+                  widget.pdfViewerController.previousPage();
                 },
               ),
-              PdfPageNumber(
-                controller: pdfController,
-                builder: (context, loadingState, page, pagesCount) {
-                  return Container(
-                    alignment: Alignment.center,
-                    child: Text(
-                      '$page/${pagesCount ?? 0}',
-                      style: TextStyle(fontSize: 22, color: Colors.white),
-                    ),
+              ValueListenableBuilder<int>(
+                valueListenable: widget.currentPageNumber,
+                builder: (context, currentPage, child) {
+                  return ValueListenableBuilder<int>(
+                    valueListenable: widget.totalPageNumber,
+                    builder: (context, totalPage, child) {
+                      return Text(
+                        '$currentPage / $totalPage',
+                        style: TextStyle(fontSize: 22, color: Colors.white),
+                      );
+                    },
                   );
                 },
               ),
               IconButton(
                 icon: Icon(Icons.arrow_forward, color: Colors.white),
-                onPressed: () async {
-                  final currentPage = pdfController.page;
-                  if (currentPage < (pdfController.pagesCount ?? 0)) {
-                    pdfController.jumpToPage(currentPage + 1);
-                  }
+                onPressed: () {
+                  widget.pdfViewerController.nextPage();
                 },
               ),
             ],
@@ -311,118 +287,6 @@ class _SlideViewState extends State<SlideView> {
           ),
         ),
       ],
-    );
-  }
-}
-
-
-class ChatSidebar extends StatefulWidget {
-  @override
-  _ChatSidebarState createState() => _ChatSidebarState();
-}
-
-class _ChatSidebarState extends State<ChatSidebar> {
-  final ScrollController _scrollController = ScrollController(); // Step 1: Declare ScrollController
-
-  @override
-  void initState() {
-    super.initState();
-    // Initialize your ScrollController here if needed
-  }
-
-  @override
-  void dispose() {
-    _scrollController.dispose(); // Dispose of the ScrollController
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: Color.fromARGB(255, 48, 48, 48),
-      child: Scrollbar(
-        thickness: 6.0,
-        radius: Radius.circular(10),
-        controller: _scrollController, // Connect the Scrollbar to the ScrollController
-        child: Column(
-          children: <Widget>[
-            Expanded(
-              child: ListView.builder(
-                controller: _scrollController, // Step 4: Assign the ScrollController to ListView.builder
-                padding: EdgeInsets.all(10),
-                itemCount: messages.length,
-                itemBuilder: (context, index) => messages[index],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class ChatMessage extends StatefulWidget {
-  final String message;
-  final bool isSentByMe;
-
-  ChatMessage({required this.message, required this.isSentByMe});
-
-  @override
-  _ChatMessageState createState() => _ChatMessageState();
-}
-
-class _ChatMessageState extends State<ChatMessage> {
-  String selectedText = "";
-
-  void _handleSelectionChange(TextSelection selection, SelectionChangedCause? cause) {
-    if (cause == SelectionChangedCause.longPress || cause == SelectionChangedCause.drag) {
-      setState(() {
-        selectedText = widget.message.substring(selection.start, selection.end);
-      });
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    Widget messageWidget = Container(
-      margin: EdgeInsets.symmetric(vertical: 10),
-      padding: EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        color: widget.isSentByMe ? backgroundColor : Color.fromARGB(255, 80, 80, 80),
-        borderRadius: BorderRadius.circular(15),
-      ),
-      child: SelectableText(
-        widget.message,
-        style: TextStyle(fontSize: 16, color: Colors.white),
-        onSelectionChanged: _handleSelectionChange,
-      ),
-    );
-
-    if (!widget.isSentByMe) {
-      return Align(
-        alignment: Alignment.centerLeft,
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Expanded(
-              child: messageWidget,
-            ),
-            IconButton(
-              icon: Icon(Icons.volume_up_rounded, size: 30, color: Colors.white),
-              onPressed: () {
-                // Print the selected text when the volume_up button is clicked
-                print('Selected text: $selectedText');
-              },
-            ),
-          ],
-        ),
-      );
-    }
-
-    return Align(
-      alignment: widget.isSentByMe ? Alignment.centerRight : Alignment.centerLeft,
-      child: messageWidget,
     );
   }
 }

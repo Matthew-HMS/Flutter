@@ -35,23 +35,23 @@ class _FilePageState extends State<FilePage> {
     for (var file in widget.files) {
       fileTiles.add(FileTile(
         title: file,
+        filePath: '',
         courseName: widget.courseName,
         onDelete: deleteFileTile,
         onUpdate: updateFileName,
         onTap: () {
-          navigateToPptPage();
+          navigateToPptPage(file);
         },
       ));
     }
     for (var otherfile in widget.otherFiles) {
       otherFileTiles.add(FileTile(
         title: otherfile,
+        filePath: '',
         courseName: widget.courseName,
         onDelete: deleteFileTile,
         onUpdate: updateFileName,
-        onTap: () {
-          navigateToPptPage();
-        },
+        onTap: () {},
       ));
     }
   }
@@ -62,20 +62,22 @@ class _FilePageState extends State<FilePage> {
       allowedExtensions: ['pdf'],
     );
     if (result != null) {
-      String fileName = result.files.single.name;
-      addFileTile(fileName);
+      String filePath = result.files.single.path!;
+      addFileTile(filePath);
     }
   }
 
   Future<void> pickOtherFile() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles();
     if (result != null) {
-      String fileName = result.files.single.name;
-      addOtherFileTile(fileName);
+      String filePath = result.files.single.path!;
+      addOtherFileTile(filePath);
     }
   }
 
-  void addFileTile(String fileName) {
+  void addFileTile(String filePath) {
+    String fileName = filePath.split('\\').last;
+    print(fileName);
     setState(() {
       fileTiles.insert(
         fileTiles.length,
@@ -83,10 +85,11 @@ class _FilePageState extends State<FilePage> {
           key: UniqueKey(),
           title: fileName,
           courseName: widget.courseName,
+          filePath: filePath,
           onDelete: deleteFileTile,
           onUpdate: updateFileName,
           onTap: () {
-            navigateToPptPage();
+            navigateToPptPage(filePath);
           },
         ),
       );
@@ -94,12 +97,15 @@ class _FilePageState extends State<FilePage> {
     });
   }
 
-  void addOtherFileTile(String fileName) {
+  void addOtherFileTile(String filePath) {
+    String fileName = filePath.split('\\').last;
     setState(() {
       otherFileTiles.insert(
         otherFileTiles.length,
         FileTile(
+          key: UniqueKey(),
           title: fileName,
+          filePath: filePath,
           courseName: widget.courseName,
           onDelete: deleteFileTile,
           onUpdate: updateFileName,
@@ -144,10 +150,10 @@ class _FilePageState extends State<FilePage> {
     });
   }
 
-  void navigateToPptPage() {
+  void navigateToPptPage(String filePath) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => PptPage(key: UniqueKey())),
+      MaterialPageRoute(builder: (context) => PptPage(filePath: filePath)),
     );
   }
 
@@ -272,6 +278,7 @@ class _FilePageState extends State<FilePage> {
 class FileTile extends StatefulWidget {
   final String title;
   final String courseName;
+  final String filePath;
   final Function(String) onDelete;
   final Function(String, String) onUpdate;
   final Function()? onTap;
@@ -280,10 +287,11 @@ class FileTile extends StatefulWidget {
     Key? key,
     required this.title,
     required this.courseName,
+    required this.filePath,
     required this.onDelete,
     required this.onUpdate,
     this.onTap,
-  }) : super(key: key) ;
+  }) : super(key: key);
 
   @override
   _FileTileState createState() => _FileTileState();
