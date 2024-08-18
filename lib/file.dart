@@ -40,7 +40,7 @@ class _FilePageState extends State<FilePage> {
         onDelete: deleteFileTile,
         onUpdate: updateFileName,
         onTap: () {
-          navigateToPptPage(file);
+          navigateToPptPage('');
         },
       ));
     }
