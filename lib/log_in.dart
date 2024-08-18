@@ -44,6 +44,7 @@ class _LoginPageState extends State<LogInPage> {
                 style: TextStyle(
                   fontSize: 40,
                   color: Colors.white,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
               const SizedBox(height: 40),
@@ -97,27 +98,37 @@ class _LoginPageState extends State<LogInPage> {
                   obscureText: !_isPasswordVisible,
                 ),
               ),
-              const SizedBox(height: 16.0),
+              const SizedBox(height: 20.0),
               TextButton(
                 onPressed: _login, //登入後端
                 style: TextButton.styleFrom(
-                  foregroundColor: Colors.lightBlue, 
-                  padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 16.0), // Button size
+                  foregroundColor: backgroundColor, 
+                  backgroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 178.0, vertical: 16.0), 
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8.0), // Custom border radius
+                  ),
                 ),
                 child: const Text(
                   '登入',
                   style: TextStyle(fontSize: 20.0), // Increase the font size
                 ),
               ),
+              SizedBox(height: 10.0),
               const Text(
                 '或',
                 style: TextStyle(color: Colors.white),
               ),
+              SizedBox(height: 10.0),
               TextButton(
                 onPressed: () {},
                 style: TextButton.styleFrom(
-                  foregroundColor: Colors.lightBlue, 
-                  padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 16.0), // Button size
+                  foregroundColor: backgroundColor, 
+                  backgroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 120.0, vertical: 16.0), 
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8.0), // Custom border radius
+                  ),
                 ),
                 child: const Text(
                   'Google帳號登入',
