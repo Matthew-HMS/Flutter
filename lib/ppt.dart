@@ -77,99 +77,130 @@ class _SlideViewState extends State<SlideView> {
   GlobalKey _textFieldKey = GlobalKey();
   OverlayEntry? _overlayEntry;
   List<Map<String, String>> _items = [
-    {'title': '生成英文講稿', 'description': '幫我生成英文講稿'},
-    {'title': '本堂課程介紹', 'description': '幫我依據這頁的內容生成本堂課的課程介紹'},
-    {'title': '生成示意圖', 'description': '幫我依據這頁的內容生成示意圖'},
-    {'title': '產生隨堂測驗', 'description': '幫我依據這頁的內容產生隨堂測驗'},
-    {'title': '指定文字風格、語氣', 'description': '幫我用...的文字風格來生成英文講稿'},
-    {'title': '生成英文講稿', 'description': '幫我生成英文講稿'},
-    {'title': '本堂課程介紹', 'description': '幫我依據這頁的內容生成本堂課的課程介紹'},
-    {'title': '生成示意圖', 'description': '幫我依據這頁的內容生成示意圖'},
-    {'title': '產生隨堂測驗', 'description': '幫我依據這頁的內容產生隨堂測驗'},
+    {'title': '/生成英文講稿', 'description': '幫我生成英文講稿'},
+    {'title': '/本堂課程介紹', 'description': '幫我依據這頁的內容生成本堂課的課程介紹'},
+    {'title': '/生成示意圖', 'description': '幫我依據這頁的內容生成示意圖'},
+    {'title': '/產生隨堂測驗', 'description': '幫我依據這頁的內容產生隨堂測驗'},
+    {'title': '/指定文字風格、語氣', 'description': '幫我用...的文字風格來生成英文講稿'},
+    {'title': '/生成英文講稿', 'description': '幫我生成英文講稿'},
+    {'title': '/本堂課程介紹', 'description': '幫我依據這頁的內容生成本堂課的課程介紹'},
+    {'title': '/生成示意圖', 'description': '幫我依據這頁的內容生成示意圖'},
+    {'title': '/產生隨堂測驗', 'description': '幫我依據這頁的內容產生隨堂測驗'},
     {'title': '指定文字風格、語氣', 'description': '幫我用...的文字風格來生成英文講稿'},
   ];
+  List<Map<String, String>> _filteredItems = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _controller.addListener(_onTextChanged);
+  }
+
+  @override
+  void dispose() {
+    _controller.removeListener(_onTextChanged);
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _onTextChanged() {
+    final query = _controller.text.toLowerCase();
+    final queryAfterSlash = query.contains('/') ? query.split('/').last : query;
+
+    _filteredItems = _items.where((item) {
+      final title = item['title']!.toLowerCase();
+      final description = item['description']!.toLowerCase();
+      
+      return title.contains(queryAfterSlash) || description.contains(queryAfterSlash);
+    }).toList();
+    _toggleOverlay();
+  }
 
   void _toggleOverlay() {
-    if (_overlayEntry == null) {
-      final screenHeight = MediaQuery.of(context).size.height;
-      final appBarHeight = Scaffold.of(context).appBarMaxHeight ?? 0; //  If using AppBar, subtract its height
-      final statusBarHeight = MediaQuery.of(context).padding.top;
-      final textFieldRenderBox = _textFieldKey.currentContext!.findRenderObject() as RenderBox;
-      final textFieldOffset = textFieldRenderBox.localToGlobal(Offset.zero);
-      final textFieldHeight = textFieldRenderBox.size.height;
-      final availableSpaceAbove = textFieldOffset.dy - statusBarHeight - appBarHeight;
-      final availableSpaceBelow = screenHeight - textFieldOffset.dy - textFieldHeight;
-      const int maxVisibleItems = 8;
-      final double listItemHeight = 65.0;
-      final double listHeight = min(_items.length * listItemHeight, maxVisibleItems * listItemHeight);
-      // Determine if the overlay should appear above or below the TextField
-      final bool shouldShowAbove = listHeight > availableSpaceBelow && listHeight < availableSpaceAbove;
-      double overlayTop;
-      double overlayHeight;
-      if (shouldShowAbove) {
-        // Show above TextField
-        overlayHeight = min(listHeight, availableSpaceAbove);
-        overlayTop = textFieldOffset.dy - overlayHeight;
-      } else {
-        // Show below TextField
-        overlayHeight = min(listHeight, availableSpaceBelow);
-        overlayTop = textFieldOffset.dy + textFieldHeight;
-      }
-      _overlayEntry = OverlayEntry(
-        builder: (context) => GestureDetector(
-          behavior: HitTestBehavior.translucent,
-          onTap: _removeOverlay,
-          child: Container(
-            color: Colors.transparent,
-            child: Stack(
-              children: [
-                Positioned(
-                  top: overlayTop,
-                  left: textFieldOffset.dx,
-                  width: textFieldRenderBox.size.width,
-                  child: ClipRRect( // Apply ClipRRect here to include the Material widget
-                    borderRadius: BorderRadius.circular(10.0), // Ensure this matches the inner ClipRRect
-                    child: Material(
-                      elevation: 4.0,
-                      color: primaryColor, // Make Material widget transparent
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(10.0), // Keep this for inner content
-                        child: Container(
-                          height: overlayHeight,
-                          color: Colors.transparent,
-                          child: ListView.builder(
-                            itemCount: _items.length,
-                            itemBuilder: (context, index) {
-                              return Container(
-                                color: Colors.transparent,
-                                child: ListTile(
-                                  title: Text(_items[index]['title']!, style: TextStyle(color: Colors.white)),
-                                  subtitle: Text(_items[index]['description']!, style: TextStyle(color: Colors.white70)),
-                                  onTap: () {
-                                    setState(() {
-                                      _controller.text += " ${_items[index]['description']}";
-                                      _controller.selection = TextSelection.fromPosition(TextPosition(offset: _controller.text.length));
-                                    });
-                                    _removeOverlay();
-                                  },
-                                ),
-                              );
-                            },
-                          ),
+    if (_overlayEntry != null) {
+      _overlayEntry!.remove();
+      _overlayEntry = null;
+    }
+
+    final screenHeight = MediaQuery.of(context).size.height;
+    final appBarHeight = Scaffold.of(context).appBarMaxHeight ?? 0;
+    final statusBarHeight = MediaQuery.of(context).padding.top;
+    final textFieldRenderBox = _textFieldKey.currentContext!.findRenderObject() as RenderBox;
+    final textFieldOffset = textFieldRenderBox.localToGlobal(Offset.zero);
+    final textFieldHeight = textFieldRenderBox.size.height;
+    final availableSpaceAbove = textFieldOffset.dy - statusBarHeight - appBarHeight;
+    final availableSpaceBelow = screenHeight - textFieldOffset.dy - textFieldHeight;
+    const int maxVisibleItems = 6;
+    final double listItemHeight = 65.0;
+    final double listHeight = min(_filteredItems.length * listItemHeight, maxVisibleItems * listItemHeight);
+    final bool shouldShowAbove = listHeight > availableSpaceBelow && listHeight < availableSpaceAbove;
+    double overlayTop;
+    double overlayHeight;
+
+    if (shouldShowAbove) {
+      overlayHeight = min(listHeight, availableSpaceAbove);
+      overlayTop = textFieldOffset.dy - overlayHeight;
+    } else {
+      overlayHeight = min(listHeight, availableSpaceBelow);
+      overlayTop = textFieldOffset.dy + textFieldHeight;
+    }
+
+    _overlayEntry = OverlayEntry(
+      builder: (context) => GestureDetector(
+        behavior: HitTestBehavior.translucent,
+        onTap: _removeOverlay,
+        child: Container(
+          color: Colors.transparent,
+          child: Stack(
+            children: [
+              Positioned(
+                top: overlayTop,
+                left: textFieldOffset.dx,
+                width: textFieldRenderBox.size.width,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(10.0),
+                  child: Material(
+                    elevation: 4.0,
+                    color: primaryColor,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(10.0),
+                      child: Container(
+                        height: overlayHeight,
+                        color: Colors.transparent,
+                        child: ListView.builder(
+                          itemCount: _filteredItems.length,
+                          itemBuilder: (context, index) {
+                            return Container(
+                              color: Colors.transparent,
+                              child: ListTile(
+                                title: Text(_filteredItems[index]['title']!, style: TextStyle(color: Colors.white)),
+                                subtitle: Text(_filteredItems[index]['description']!, style: TextStyle(color: Colors.white70)),
+                                onTap: () {
+                                  setState(() {
+                                    final text = _controller.text;
+                                    final lastSlashIndex = text.lastIndexOf('/');
+                                    final textBeforeLastSlash = lastSlashIndex != -1 ? text.substring(0, lastSlashIndex) : text;
+                                    _controller.text = "$textBeforeLastSlash${_filteredItems[index]['description']} ";
+                                    _controller.selection = TextSelection.fromPosition(TextPosition(offset: _controller.text.length));
+                                  });
+                                  _removeOverlay();
+                                },
+                              ),
+                            );
+                          },
                         ),
                       ),
                     ),
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
-      );
-      Overlay.of(context)!.insert(_overlayEntry!);
-    } else {
-      _removeOverlay();
-    }
+      ),
+    );
+
+    Overlay.of(context)!.insert(_overlayEntry!);
   }
 
   void _removeOverlay() {
@@ -186,6 +217,12 @@ class _SlideViewState extends State<SlideView> {
       });
       widget.updateMessagesCallback();
     }
+  }
+
+  void _lightbulbPressed() {
+    _controller.selection = TextSelection.fromPosition(TextPosition(offset: _controller.text.length));
+    _filteredItems = _items;
+    _toggleOverlay();
   }
 
   @override
@@ -263,17 +300,17 @@ class _SlideViewState extends State<SlideView> {
                     hintStyle: TextStyle(color: Colors.white),
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
                     prefixIcon: Padding(
-                      padding: EdgeInsets.only(left: 8.0), // Adjust the padding value as needed
+                      padding: EdgeInsets.only(left: 8.0),
                       child: IconButton(
                         icon: Icon(FontAwesomeIcons.lightbulb, size: 25.0, color: Colors.white),
-                        onPressed: _toggleOverlay, // Method to open list of items
+                        onPressed: _lightbulbPressed,
                       ),
                     ),
                     suffixIcon: Padding(
-                      padding: EdgeInsets.only(right: 8.0), // Adjust the padding value as needed
+                      padding: EdgeInsets.only(right: 8.0),
                       child: IconButton(
                         icon: Icon(FontAwesomeIcons.paperPlane, size: 20.0, color: Colors.white),
-                        onPressed: _sendMessage, // Method to send message
+                        onPressed: _sendMessage,
                       ),
                     ),
                   ),

@@ -161,12 +161,16 @@ class _RegisterPageState extends State<RegisterPage> {
                   obscureText: !_isConfirmPasswordVisible,
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 20),
               TextButton(
                 onPressed: _register,
                 style: TextButton.styleFrom(
-                  foregroundColor: Colors.lightBlue,
-                  padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 16.0),
+                  foregroundColor: backgroundColor, 
+                  backgroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 178.0, vertical: 16.0), 
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8.0), // Custom border radius
+                  ),
                 ),
                 child: const Text(
                   '註冊',
