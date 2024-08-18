@@ -3,7 +3,8 @@ import 'package:file_picker/file_picker.dart';
 import 'package:http/http.dart';
 import 'course.dart';
 import 'ppt.dart';
-import 'api_file.dart';
+import 'api_file.dart' as apiFile;
+import 'api_ppt.dart' as apiPpt;
 
 const Color backgroundColor = Color.fromARGB(255, 61, 61, 61);
 
@@ -26,7 +27,7 @@ class FilePage extends StatefulWidget {
 
 class _FilePageState extends State<FilePage> {
   PageController _pageController = PageController();
-  List<Widget> fileTiles = [];
+  List<Widget> pptFileTiles = [];
   List<Widget> otherFileTiles = [];
   final TextEditingController _fileNameController = TextEditingController();
   final TextEditingController _otherFileNameController = TextEditingController();
@@ -34,26 +35,25 @@ class _FilePageState extends State<FilePage> {
   @override
   void initState() {
     super.initState();
-    fileTiles.add(AddCourseTile(onAddCourse: pickFile, text: '新增簡報'));
+    pptFileTiles.add(AddCourseTile(onAddCourse: pickPptFile, text: '新增簡報'));
     otherFileTiles.add(AddCourseTile(onAddCourse: pickOtherFile, text: '新增補充教材'));
-    _fetchFiles();
+    _fetchPptFiles();
+    _fetchOtherFiles();
   }
 
-  Future<void> _fetchFiles() async {
+  Future<void> _fetchPptFiles() async {
     try {
-      print('Fetching files...');  // Debug output
-      List<File> files = await ApiService.fetchModels(widget.class_id);
-      print('Fetched files: $files');  // Debug output
+      List<apiPpt.Ppt> Ppts = await apiPpt.ApiService.fetchModels(widget.class_id);
       setState(() {
-        fileTiles = [
-          AddCourseTile(onAddCourse: pickFile),
-          ...files.map((file) {
+        pptFileTiles = [
+          AddCourseTile(onAddCourse: pickPptFile),
+          ...Ppts.map((Ppt) {
             return FileTile(
-              file_id: file.file_id,
-              title: file.file_name,
-              file_path: file.file_path,
+              file_id: Ppt.ppt_id,
+              title: Ppt.ppt_name,
+              file_path: Ppt.ppt_path,
               courseName: widget.courseName,
-              onDelete: deleteFileTile,
+              onDelete: () => deletePptFileTile(Ppt.ppt_id),
               onUpdate: updateFileName,
               onTap: () {
                 navigateToPptPage();
@@ -63,15 +63,42 @@ class _FilePageState extends State<FilePage> {
         ];
       });
     } catch (e) {
-      print('Failed to fetchCourses: $e');
+      print('Failed to fetchPptFiles: $e');
     }
   }
 
-  Future<void> pickFile() async {
+  Future<void> _fetchOtherFiles() async {
+    try {
+      List<apiFile.File> files = await apiFile.ApiService.fetchModels(widget.class_id);
+      setState(() {
+        otherFileTiles = [
+          AddCourseTile(onAddCourse: pickOtherFile),
+          ...files.map((file) {
+            return FileTile(
+              file_id: file.file_id,
+              title: file.file_name,
+              file_path: file.file_path,
+              courseName: widget.courseName,
+              onDelete: () => deleteOtherFileTile(file.file_id),
+              onUpdate: updateFileName,
+              onTap: () {
+                // navigateToPptPage();
+              },
+            );
+          }).toList(),
+        ];
+      });
+    } catch (e) {
+      print('Failed to fetchOtherFiles: $e');
+    }
+  }
+
+  Future<void> pickPptFile() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles();
     if (result != null) {
       String fileName = result.files.single.name;
-      addFileTile(fileName);
+      String filePath = result.files.single.path!;
+      addPptFileTile(fileName, filePath, widget.class_id);
     }
   }
 
@@ -79,61 +106,53 @@ class _FilePageState extends State<FilePage> {
     FilePickerResult? result = await FilePicker.platform.pickFiles();
     if (result != null) {
       String fileName = result.files.single.name;
-      addOtherFileTile(fileName);
+      String filePath = result.files.single.path!;
+      addOtherFileTile(fileName, filePath, widget.class_id);
     }
   }
 
-  void addFileTile(String fileName) {
-    // setState(() {
-    //   fileTiles.insert(
-    //     fileTiles.length,
-    //     FileTile(
-    //       key: UniqueKey(),
-    //       file_id: 
-    //       title: fileName,
-    //       courseName: widget.courseName,
-    //       onDelete: deleteFileTile,
-    //       onUpdate: updateFileName,
-    //       onTap: () {
-    //         navigateToPptPage();
-    //       },
-    //     ),
-    //   );
-    //   widget.files.add(fileName);
-    // });
+  void addPptFileTile(String fileName, String filePath, int class_id) async {
+    try {      
+      final response = await apiPpt.ApiService.createPpt(fileName, filePath, class_id);
+      if (response.statusCode == 201) {
+        _fetchOtherFiles(); // 新增成功後重新載入課程
+      }           
+    } catch (e) {
+      print('Failed to create PptFile: $e');
+    }
   }
 
-  void addOtherFileTile(String fileName) {
-    // setState(() {
-    //   otherFileTiles.insert(
-    //     otherFileTiles.length,
-    //     FileTile(
-    //       title: fileName,
-    //       courseName: widget.courseName,
-    //       onDelete: deleteFileTile,
-    //       onUpdate: updateFileName,
-    //     ),
-    //   );
-    //   widget.otherFiles.add(fileName);
-    // });
+  void addOtherFileTile(String fileName, String filePath, int class_id) async {
+    try {      
+      final response = await apiFile.ApiService.createFile(fileName, filePath, class_id);
+      if (response.statusCode == 201) {
+        _fetchOtherFiles(); // 新增成功後重新載入課程
+      }           
+    } catch (e) {
+      print('Failed to create OtherFile: $e');
+    }
   }
 
-  void deleteFileTile(String fileName) {
-    setState(() {
-      // Check the current page index. Assuming 0 is for 'files' and 1 is for 'otherFiles'.
-      int currentPage = _pageController.page?.round() ?? 0; // Default to 0 if null
-      List<Widget> tiles = currentPage == 0 ? fileTiles : otherFileTiles;
-      List<String> filesList = currentPage == 0 ? widget.files : widget.otherFiles;
+  void deletePptFileTile(int ppt_id) async {
+    try {      
+      final response = await apiPpt.ApiService.deletePpt(ppt_id);
+      if (response.statusCode == 204) {
+        _fetchPptFiles();
+      }           
+    } catch (e) {
+      print('Failed to delete PptFile: $e');
+    }
+  }
 
-      // Remove the tile and the file name from the respective lists
-      tiles.removeWhere((element) {
-        if (element is FileTile) {
-          return element.title == fileName;
-        }
-        return false;
-      });
-      filesList.remove(fileName);
-    });
+  void deleteOtherFileTile(int file_id) async {
+    try {      
+      final response = await apiFile.ApiService.deleteFile(file_id);
+      if (response.statusCode == 204) {
+        _fetchOtherFiles();
+      }           
+    } catch (e) {
+      print('Failed to delete OtherFile: $e');
+    }
   }
 
   void updateFileName(String oldName, String newName) {
@@ -236,9 +255,9 @@ class _FilePageState extends State<FilePage> {
                               crossAxisSpacing: 75, // Horizontal spacing between items
                               mainAxisSpacing: 75, // Vertical spacing between items
                             ),
-                            itemCount: fileTiles.length,
+                            itemCount: pptFileTiles.length,
                             itemBuilder: (context, index) {
-                              return fileTiles[index];
+                              return pptFileTiles[index];
                             },
                           ),
                         ),
@@ -283,7 +302,7 @@ class FileTile extends StatefulWidget {
   final String title;
   final String file_path;
   final String courseName;
-  final Function(String) onDelete;
+  final Function() onDelete;
   final Function(String, String) onUpdate;
   final Function()? onTap;
 
@@ -363,7 +382,7 @@ class _FileTileState extends State<FileTile> {
                       if (newValue == '編輯名稱') {
                         showEditDialog(context);
                       } else if (newValue == '刪除檔案') {
-                        widget.onDelete(_title);
+                        widget.onDelete();
                       }
                     },
                     itemBuilder: (BuildContext context) {
