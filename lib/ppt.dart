@@ -4,7 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'chat.dart';
-import 'api_prompt.dart';
+import 'api_prompt.dart' as ApiPrompt;
+import 'api_gpt.dart' as ApiGpt;
 
 const Color backgroundColor = Color.fromARGB(255, 61, 61, 61);
 const Color primaryColor = Color.fromARGB(255, 48, 48, 48);
@@ -77,20 +78,40 @@ class _SlideViewState extends State<SlideView> {
   final TextEditingController _controller = TextEditingController();
   GlobalKey _textFieldKey = GlobalKey();
   OverlayEntry? _overlayEntry;
-  List<Map<String, String>> _items = [
-    {'title': '/生成英文講稿', 'description': '幫我生成英文講稿'},
-    {'title': '/本堂課程介紹', 'description': '幫我依據這頁的內容生成本堂課的課程介紹'},
-    {'title': '/生成示意圖', 'description': '幫我依據這頁的內容生成示意圖'},
-    {'title': '/產生隨堂測驗', 'description': '幫我依據這頁的內容產生隨堂測驗'},
-    {'title': '/指定文字風格、語氣', 'description': '幫我用...的文字風格來生成英文講稿'},
-  ];
+  // List<Map<String, String>> _items = [
+  //   {'title': '/生成英文講稿', 'description': '幫我生成英文講稿'},
+  //   {'title': '/本堂課程介紹', 'description': '幫我依據這頁的內容生成本堂課的課程介紹'},
+  //   {'title': '/生成示意圖', 'description': '幫我依據這頁的內容生成示意圖'},
+  //   {'title': '/產生隨堂測驗', 'description': '幫我依據這頁的內容產生隨堂測驗'},
+  //   {'title': '/指定文字風格、語氣', 'description': '幫我用...的文字風格來生成英文講稿'},
+  // ];
+  List<Map<String, String>> _items  = [];
   List<Map<String, String>> _filteredItems = [];
 
   @override
   void initState() {
     super.initState();
     _controller.addListener(_onTextChanged);
+    fetchPrompts(); // 加載 API 數據
   }
+
+  Future<void> fetchPrompts() async {
+  try {
+    List<ApiPrompt.Prompt> prompts = await ApiPrompt.ApiService.fetchModels();
+    setState(() {
+      _filteredItems = prompts.map((prompt) {
+        return {
+          'title': prompt.name,
+          'description': prompt.content,
+          'id': prompt.prompt_id.toString(),
+        };
+      }).toList();
+      _items = _filteredItems; // 初始化 _items 為獲取到的數據
+    });
+  } catch (e) {
+    print('Failed to load prompts: $e');
+  }
+}
 
   @override
   void dispose() {
@@ -103,12 +124,13 @@ class _SlideViewState extends State<SlideView> {
     final query = _controller.text.toLowerCase();
     final queryAfterSlash = query.contains('/') ? query.split('/').last : query;
 
-    _filteredItems = _items.where((item) {
-      final title = item['title']!.toLowerCase();
-      final description = item['description']!.toLowerCase();
-      
-      return title.contains(queryAfterSlash) || description.contains(queryAfterSlash);
-    }).toList();
+    setState(() {
+      _filteredItems = _items.where((item) {
+        final title = item['title']!.toLowerCase();
+        final description = item['description']!.toLowerCase();
+        return title.contains(queryAfterSlash) || description.contains(queryAfterSlash);
+      }).toList();
+    });
     _toggleOverlay();
   }
 
@@ -204,14 +226,26 @@ class _SlideViewState extends State<SlideView> {
     _overlayEntry = null;
   }
 
-  void _sendMessage() {
-    final String text = _controller.text;
+  void _sendMessage() async{
+    final String text = _controller.text;    
     if (text.isNotEmpty) {
+      try {
+      // 使用 await 等待 sendMessage 完成，並獲取返回值
+      String returnText = await ApiGpt.ApiService.sendMessage(5, text, 1, 4);
+      
       setState(() {
+        // 更新 UI，添加發送的消息和回應的消息
         messages.add(ChatMessage(message: text, isSentByMe: true));
-        _controller.clear();
+        messages.add(ChatMessage(message: returnText, isSentByMe: false));
+        _controller.clear();  // 清除輸入框
       });
+      
+      // 更新消息回調
       widget.updateMessagesCallback();
+    } catch (e) {
+      // 異常處理
+      print('Error sending message: $e');
+    }
     }
   }
 
@@ -323,3 +357,19 @@ class _SlideViewState extends State<SlideView> {
     );
   }
 }
+
+// class Prompt {
+//   final int id;
+//   final String name;
+//   final String content;
+
+//   Prompt({required this.id, required this.name, required this.content});
+
+//   factory Prompt.fromJson(Map<String, dynamic> json) {
+//     return Prompt(
+//       id: json['prompt_id'],
+//       name: json['prompt_name'],
+//       content: json['prompt_content'],
+//     );
+//   }
+// }
