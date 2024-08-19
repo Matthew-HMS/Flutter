@@ -175,7 +175,7 @@ class _FilePageState extends State<FilePage> {
   void navigateToPptPage() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => PptPage(key: UniqueKey())),
+      MaterialPageRoute(builder: (context) => PptPage(filePath: "filePath_here")),
     );
   }
 

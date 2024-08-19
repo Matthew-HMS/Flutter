@@ -1,32 +1,26 @@
 import 'dart:math';
-
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'chat.dart';
 
 const Color backgroundColor = Color.fromARGB(255, 61, 61, 61);
 const Color primaryColor = Color.fromARGB(255, 48, 48, 48);
-List<Widget> messages = [
-  ChatMessage(
-    message: "您好，需要什麼幫助呢？",
-    isSentByMe: false,
-  ),
-  ChatMessage(
-    message: "測試RWD測試RWD測試RWD測試RWD測試RWD測試RWD測試RWD測試RWD測試RWD測試RWD測試RWD測試RWD",
-    isSentByMe: false,
-  ),
-];
 
 class PptPage extends StatefulWidget {
-  const PptPage({super.key});
+  final String filePath;
+
+  const PptPage({Key? key, required this.filePath}) : super(key: key);
 
   @override
   _PptPageState createState() => _PptPageState();
 }
 
 class _PptPageState extends State<PptPage> {
-  void _updateMessages() {
-    setState(() {});
-  }
+  final PdfViewerController _pdfViewerController = PdfViewerController();
+  final ValueNotifier<int> _currentPageNumber = ValueNotifier<int>(1);
+  final ValueNotifier<int> _totalPageNumber = ValueNotifier<int>(0);
 
   @override
   Widget build(BuildContext context) {
@@ -37,10 +31,13 @@ class _PptPageState extends State<PptPage> {
           Expanded(
             flex: 2,
             child: SlideView(
+              filePath: widget.filePath,
               updateMessagesCallback: _updateMessages,
+              pdfViewerController: _pdfViewerController,
+              currentPageNumber: _currentPageNumber,
+              totalPageNumber: _totalPageNumber,
             ),
           ),
-          // VerticalDivider(width: 1, color: Colors.grey),
           Expanded(
             flex: 1,
             child: ChatSidebar(),
@@ -49,14 +46,27 @@ class _PptPageState extends State<PptPage> {
       ),
     );
   }
+
+  void _updateMessages() {
+    setState(() {});
+  }
 }
 
-
 class SlideView extends StatefulWidget {
+  final String filePath;
   final VoidCallback updateMessagesCallback;
+  final PdfViewerController pdfViewerController;
+  final ValueNotifier<int> currentPageNumber;
+  final ValueNotifier<int> totalPageNumber;
 
-  const SlideView({Key? key, required this.updateMessagesCallback}) : super(key: key);
-
+  const SlideView({
+    Key? key,
+    required this.filePath,
+    required this.updateMessagesCallback,
+    required this.pdfViewerController,
+    required this.currentPageNumber,
+    required this.totalPageNumber,
+  }) : super(key: key);
 
   @override
   _SlideViewState createState() => _SlideViewState();
@@ -66,124 +76,136 @@ class _SlideViewState extends State<SlideView> {
   final TextEditingController _controller = TextEditingController();
   GlobalKey _textFieldKey = GlobalKey();
   OverlayEntry? _overlayEntry;
-  List<String> _items = ["Item 1", "Item 2", "Item 3", "Item 4", "Item 5", "Item 6", "Item 7", "Item 8", "Item 9", "Item 10"];
-  int hoveredIndex = -1;
+  List<Map<String, String>> _items = [
+    {'title': '/生成英文講稿', 'description': '幫我生成英文講稿'},
+    {'title': '/本堂課程介紹', 'description': '幫我依據這頁的內容生成本堂課的課程介紹'},
+    {'title': '/生成示意圖', 'description': '幫我依據這頁的內容生成示意圖'},
+    {'title': '/產生隨堂測驗', 'description': '幫我依據這頁的內容產生隨堂測驗'},
+    {'title': '/指定文字風格、語氣', 'description': '幫我用...的文字風格來生成英文講稿'},
+    {'title': '/生成英文講稿', 'description': '幫我生成英文講稿'},
+    {'title': '/本堂課程介紹', 'description': '幫我依據這頁的內容生成本堂課的課程介紹'},
+    {'title': '/生成示意圖', 'description': '幫我依據這頁的內容生成示意圖'},
+    {'title': '/產生隨堂測驗', 'description': '幫我依據這頁的內容產生隨堂測驗'},
+    {'title': '指定文字風格、語氣', 'description': '幫我用...的文字風格來生成英文講稿'},
+  ];
+  List<Map<String, String>> _filteredItems = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _controller.addListener(_onTextChanged);
+  }
+
+  @override
+  void dispose() {
+    _controller.removeListener(_onTextChanged);
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _onTextChanged() {
+    final query = _controller.text.toLowerCase();
+    final queryAfterSlash = query.contains('/') ? query.split('/').last : query;
+
+    _filteredItems = _items.where((item) {
+      final title = item['title']!.toLowerCase();
+      final description = item['description']!.toLowerCase();
+      
+      return title.contains(queryAfterSlash) || description.contains(queryAfterSlash);
+    }).toList();
+    _toggleOverlay();
+  }
 
   void _toggleOverlay() {
-    if (_overlayEntry == null) {
-      final screenHeight = MediaQuery.of(context).size.height;
-      final appBarHeight = Scaffold.of(context).appBarMaxHeight ?? 0; // If using AppBar, subtract its height
-      final statusBarHeight = MediaQuery.of(context).padding.top;
+    if (_overlayEntry != null) {
+      _overlayEntry!.remove();
+      _overlayEntry = null;
+    }
 
-      final textFieldRenderBox = _textFieldKey.currentContext!.findRenderObject() as RenderBox;
-      final textFieldOffset = textFieldRenderBox.localToGlobal(Offset.zero);
-      final textFieldHeight = textFieldRenderBox.size.height;
+    final screenHeight = MediaQuery.of(context).size.height;
+    final appBarHeight = Scaffold.of(context).appBarMaxHeight ?? 0;
+    final statusBarHeight = MediaQuery.of(context).padding.top;
+    final textFieldRenderBox = _textFieldKey.currentContext!.findRenderObject() as RenderBox;
+    final textFieldOffset = textFieldRenderBox.localToGlobal(Offset.zero);
+    final textFieldHeight = textFieldRenderBox.size.height;
+    final availableSpaceAbove = textFieldOffset.dy - statusBarHeight - appBarHeight;
+    final availableSpaceBelow = screenHeight - textFieldOffset.dy - textFieldHeight;
+    const int maxVisibleItems = 6;
+    final double listItemHeight = 65.0;
+    final double listHeight = min(_filteredItems.length * listItemHeight, maxVisibleItems * listItemHeight);
+    final bool shouldShowAbove = listHeight > availableSpaceBelow && listHeight < availableSpaceAbove;
+    double overlayTop;
+    double overlayHeight;
 
-      final availableSpaceAbove = textFieldOffset.dy - statusBarHeight - appBarHeight;
-      final availableSpaceBelow = screenHeight - textFieldOffset.dy - textFieldHeight;
+    if (shouldShowAbove) {
+      overlayHeight = min(listHeight, availableSpaceAbove);
+      overlayTop = textFieldOffset.dy - overlayHeight;
+    } else {
+      overlayHeight = min(listHeight, availableSpaceBelow);
+      overlayTop = textFieldOffset.dy + textFieldHeight;
+    }
 
-      const int maxVisibleItems = 8;
-      final double listItemHeight = 50.0; // Assuming each list item has a fixed height of 50.0
-      final double listHeight = min(_items.length, maxVisibleItems) * listItemHeight;
-
-      // Determine if the overlay should appear above or below the TextField
-      final bool shouldShowAbove = listHeight > availableSpaceBelow && listHeight < availableSpaceAbove;
-
-      double overlayTop;
-      double overlayHeight;      
-
-      if (shouldShowAbove) {
-        // Show above TextField
-        overlayHeight = min(listHeight, availableSpaceAbove);
-        overlayTop = textFieldOffset.dy - overlayHeight;
-      } else {
-        // Show below TextField
-        overlayHeight = min(listHeight, availableSpaceBelow);
-        overlayTop = textFieldOffset.dy + textFieldHeight;
-      }
-
-      _overlayEntry = OverlayEntry(
-        builder: (context) => GestureDetector(
-          behavior: HitTestBehavior.translucent,
-          onTap: _removeOverlay,
-          child: Container(
-            color: Colors.transparent,
-            child: Stack(
-              children: [
-                Positioned(
-                  top: overlayTop,
-                  left: textFieldOffset.dx,
-                  width: textFieldRenderBox.size.width,
-                  child: ClipRRect( // Apply ClipRRect here to include the Material widget
-                    borderRadius: BorderRadius.circular(10.0), // Ensure this matches the inner ClipRRect
-                    child: Material(
-                      elevation: 4.0,
-                      color: primaryColor, // Make Material widget transparent
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(10.0), // Keep this for inner content
-                        child: Container(
-                          height: overlayHeight,
-                          color: Colors.transparent,
-                          child: ListView.builder(
-                            itemCount: _items.length,
-                            itemBuilder: (context, index) {
-                              return Container(
-                                color: Colors.transparent, 
-                                child: ListTile(
-                                  title: Text(_items[index], style: TextStyle(color: Colors.white)),
-                                  onTap: () {
-                                    // Append the tapped item's text to the TextField's current text
-                                    setState(() {
-                                      _controller.text += " ${_items[index]}"; // Append the item text
-                                      _controller.selection = TextSelection.fromPosition(TextPosition(offset: _controller.text.length)); // Move cursor to the end
-                                    });
-                                    _removeOverlay(); // Optionally close the overlay after selection
-                                  },
-                                ),
-                              );
-                            },
-                          ),
+    _overlayEntry = OverlayEntry(
+      builder: (context) => GestureDetector(
+        behavior: HitTestBehavior.translucent,
+        onTap: _removeOverlay,
+        child: Container(
+          color: Colors.transparent,
+          child: Stack(
+            children: [
+              Positioned(
+                top: overlayTop,
+                left: textFieldOffset.dx,
+                width: textFieldRenderBox.size.width,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(10.0),
+                  child: Material(
+                    elevation: 4.0,
+                    color: primaryColor,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(10.0),
+                      child: Container(
+                        height: overlayHeight,
+                        color: Colors.transparent,
+                        child: ListView.builder(
+                          itemCount: _filteredItems.length,
+                          itemBuilder: (context, index) {
+                            return Container(
+                              color: Colors.transparent,
+                              child: ListTile(
+                                title: Text(_filteredItems[index]['title']!, style: TextStyle(color: Colors.white)),
+                                subtitle: Text(_filteredItems[index]['description']!, style: TextStyle(color: Colors.white70)),
+                                onTap: () {
+                                  setState(() {
+                                    final text = _controller.text;
+                                    final lastSlashIndex = text.lastIndexOf('/');
+                                    final textBeforeLastSlash = lastSlashIndex != -1 ? text.substring(0, lastSlashIndex) : text;
+                                    _controller.text = "$textBeforeLastSlash${_filteredItems[index]['description']} ";
+                                    _controller.selection = TextSelection.fromPosition(TextPosition(offset: _controller.text.length));
+                                  });
+                                  _removeOverlay();
+                                },
+                              ),
+                            );
+                          },
                         ),
                       ),
                     ),
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
-      );
+      ),
+    );
 
-      Overlay.of(context)!.insert(_overlayEntry!);
-    } else {
-      _removeOverlay();
-    }
-  }
-
-  // Method to calculate the left position of the overlay to align with the TextField
-  double _calculateOverlayLeftPosition() {
-    final RenderBox renderBox = _textFieldKey.currentContext!.findRenderObject() as RenderBox;
-    final Offset offset = renderBox.localToGlobal(Offset.zero);
-    return offset.dx; // Return the left position for the overlay
-  }
-
-  // Method to calculate the width of the overlay to match the TextField
-  double _calculateOverlayWidth() {
-    final RenderBox renderBox = _textFieldKey.currentContext!.findRenderObject() as RenderBox;
-    return renderBox.size.width; // Return the width of the TextField
+    Overlay.of(context)!.insert(_overlayEntry!);
   }
 
   void _removeOverlay() {
     _overlayEntry?.remove();
     _overlayEntry = null;
-  }
-
-  double _calculateOverlayPosition() {
-    final RenderBox renderBox = _textFieldKey.currentContext!.findRenderObject() as RenderBox;
-    final Offset offset = renderBox.localToGlobal(Offset.zero);
-
-    // Return the top position for the overlay, adjust based on your UI
-    return offset.dy - 210; // Example: TextField's Y position - Overlay Height
   }
 
   void _sendMessage() {
@@ -195,6 +217,12 @@ class _SlideViewState extends State<SlideView> {
       });
       widget.updateMessagesCallback();
     }
+  }
+
+  void _lightbulbPressed() {
+    _controller.selection = TextSelection.fromPosition(TextPosition(offset: _controller.text.length));
+    _filteredItems = _items;
+    _toggleOverlay();
   }
 
   @override
@@ -212,11 +240,16 @@ class _SlideViewState extends State<SlideView> {
         Expanded(
           child: Container(
             color: backgroundColor,
-            child: Center(
-              child: Text(
-                'Slide Content Here',
-                style: TextStyle(fontSize: 24),
-              ),
+            child: SfPdfViewer.file(
+              File(widget.filePath),
+              controller: widget.pdfViewerController,
+              pageLayoutMode: PdfPageLayoutMode.single,
+              onPageChanged: (PdfPageChangedDetails details) {
+                widget.currentPageNumber.value = details.newPageNumber;
+              },
+              onDocumentLoaded: (PdfDocumentLoadedDetails details) {
+                widget.totalPageNumber.value = details.document.pages.count;
+              },
             ),
           ),
         ),
@@ -226,13 +259,30 @@ class _SlideViewState extends State<SlideView> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: <Widget>[
               IconButton(
-                icon: Icon(Icons.arrow_back),
-                onPressed: () {},
+                icon: Icon(Icons.arrow_back, color: Colors.white),
+                onPressed: () {
+                  widget.pdfViewerController.previousPage();
+                },
               ),
-              Text('2 / 36'),
+              ValueListenableBuilder<int>(
+                valueListenable: widget.currentPageNumber,
+                builder: (context, currentPage, child) {
+                  return ValueListenableBuilder<int>(
+                    valueListenable: widget.totalPageNumber,
+                    builder: (context, totalPage, child) {
+                      return Text(
+                        '$currentPage / $totalPage',
+                        style: TextStyle(fontSize: 22, color: Colors.white),
+                      );
+                    },
+                  );
+                },
+              ),
               IconButton(
-                icon: Icon(Icons.arrow_forward),
-                onPressed: () {},
+                icon: Icon(Icons.arrow_forward, color: Colors.white),
+                onPressed: () {
+                  widget.pdfViewerController.nextPage();
+                },
               ),
             ],
           ),
@@ -250,17 +300,17 @@ class _SlideViewState extends State<SlideView> {
                     hintStyle: TextStyle(color: Colors.white),
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
                     prefixIcon: Padding(
-                      padding: EdgeInsets.only(left: 8.0), // Adjust the padding value as needed
+                      padding: EdgeInsets.only(left: 8.0),
                       child: IconButton(
                         icon: Icon(FontAwesomeIcons.lightbulb, size: 25.0, color: Colors.white),
-                        onPressed: _toggleOverlay, // Method to open list of items
+                        onPressed: _lightbulbPressed,
                       ),
                     ),
                     suffixIcon: Padding(
-                      padding: EdgeInsets.only(right: 8.0), // Adjust the padding value as needed
+                      padding: EdgeInsets.only(right: 8.0),
                       child: IconButton(
                         icon: Icon(FontAwesomeIcons.paperPlane, size: 20.0, color: Colors.white),
-                        onPressed: _sendMessage, // Method to send message
+                        onPressed: _sendMessage,
                       ),
                     ),
                   ),
@@ -274,118 +324,6 @@ class _SlideViewState extends State<SlideView> {
           ),
         ),
       ],
-    );
-  }
-}
-
-
-class ChatSidebar extends StatefulWidget {
-  @override
-  _ChatSidebarState createState() => _ChatSidebarState();
-}
-
-class _ChatSidebarState extends State<ChatSidebar> {
-  final ScrollController _scrollController = ScrollController(); // Step 1: Declare ScrollController
-
-  @override
-  void initState() {
-    super.initState();
-    // Initialize your ScrollController here if needed
-  }
-
-  @override
-  void dispose() {
-    _scrollController.dispose(); // Dispose of the ScrollController
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: Color.fromARGB(255, 48, 48, 48),
-      child: Scrollbar(
-        thickness: 6.0,
-        radius: Radius.circular(10),
-        controller: _scrollController, // Connect the Scrollbar to the ScrollController
-        child: Column(
-          children: <Widget>[
-            Expanded(
-              child: ListView.builder(
-                controller: _scrollController, // Step 4: Assign the ScrollController to ListView.builder
-                padding: EdgeInsets.all(10),
-                itemCount: messages.length,
-                itemBuilder: (context, index) => messages[index],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class ChatMessage extends StatefulWidget {
-  final String message;
-  final bool isSentByMe;
-
-  ChatMessage({required this.message, required this.isSentByMe});
-
-  @override
-  _ChatMessageState createState() => _ChatMessageState();
-}
-
-class _ChatMessageState extends State<ChatMessage> {
-  String selectedText = "";
-
-  void _handleSelectionChange(TextSelection selection, SelectionChangedCause? cause) {
-    if (cause == SelectionChangedCause.longPress || cause == SelectionChangedCause.drag) {
-      setState(() {
-        selectedText = widget.message.substring(selection.start, selection.end);
-      });
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    Widget messageWidget = Container(
-      margin: EdgeInsets.symmetric(vertical: 10),
-      padding: EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        color: widget.isSentByMe ? backgroundColor : Color.fromARGB(255, 80, 80, 80),
-        borderRadius: BorderRadius.circular(15),
-      ),
-      child: SelectableText(
-        widget.message,
-        style: TextStyle(fontSize: 16, color: Colors.white),
-        onSelectionChanged: _handleSelectionChange,
-      ),
-    );
-
-    if (!widget.isSentByMe) {
-      return Align(
-        alignment: Alignment.centerLeft,
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Expanded(
-              child: messageWidget,
-            ),
-            IconButton(
-              icon: Icon(Icons.volume_up_rounded, size: 30, color: Colors.white),
-              onPressed: () {
-                // Print the selected text when the volume_up button is clicked
-                print('Selected text: $selectedText');
-              },
-            ),
-          ],
-        ),
-      );
-    }
-
-    return Align(
-      alignment: widget.isSentByMe ? Alignment.centerRight : Alignment.centerLeft,
-      child: messageWidget,
     );
   }
 }

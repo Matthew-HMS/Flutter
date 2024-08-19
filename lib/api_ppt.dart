@@ -26,7 +26,7 @@ class ApiService {
       },
       body: jsonEncode(<String, String>{
         'ppt_name': name,
-        'ppt_path': path,
+        'ppt_local_path': path,
         'class_class': class_id.toString(),
       }),
     );
@@ -39,9 +39,10 @@ class ApiService {
     }
   }
 
+  // undo
   static Future<http.Response> deletePpt(int file_id) async {
     final response = await http.delete(
-      Uri.parse(baseUrl + "file/"),
+      Uri.parse(baseUrl + "ppt/"),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
