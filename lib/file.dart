@@ -175,7 +175,7 @@ class _FilePageState extends State<FilePage> {
   void navigateToPptPage() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => PptPage(filePath: "filePath_here")),
+      MaterialPageRoute(builder: (context) => PptPage(filePath: "D:/NCU_Project/Flutter_project/flutter_application_ncu_emi/assets/user_data/test.pdf")),
     );
   }
 

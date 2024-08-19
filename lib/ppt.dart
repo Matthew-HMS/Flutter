@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'chat.dart';
+import 'api_prompt.dart';
 
 const Color backgroundColor = Color.fromARGB(255, 61, 61, 61);
 const Color primaryColor = Color.fromARGB(255, 48, 48, 48);
@@ -82,11 +83,6 @@ class _SlideViewState extends State<SlideView> {
     {'title': '/生成示意圖', 'description': '幫我依據這頁的內容生成示意圖'},
     {'title': '/產生隨堂測驗', 'description': '幫我依據這頁的內容產生隨堂測驗'},
     {'title': '/指定文字風格、語氣', 'description': '幫我用...的文字風格來生成英文講稿'},
-    {'title': '/生成英文講稿', 'description': '幫我生成英文講稿'},
-    {'title': '/本堂課程介紹', 'description': '幫我依據這頁的內容生成本堂課的課程介紹'},
-    {'title': '/生成示意圖', 'description': '幫我依據這頁的內容生成示意圖'},
-    {'title': '/產生隨堂測驗', 'description': '幫我依據這頁的內容產生隨堂測驗'},
-    {'title': '指定文字風格、語氣', 'description': '幫我用...的文字風格來生成英文講稿'},
   ];
   List<Map<String, String>> _filteredItems = [];
 
@@ -306,7 +302,7 @@ class _SlideViewState extends State<SlideView> {
                         onPressed: _lightbulbPressed,
                       ),
                     ),
-                    suffixIcon: Padding(
+                    suffixIcon: Padding(  // send message button
                       padding: EdgeInsets.only(right: 8.0),
                       child: IconButton(
                         icon: Icon(FontAwesomeIcons.paperPlane, size: 20.0, color: Colors.white),
