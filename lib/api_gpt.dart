@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 class ApiService {
   static const String baseUrl = "http://127.0.0.1:8000/";
 
-  static Future<String> sendMessage(int class_id, String message, int PttWord_page, int ppt_id) async {
+  static Future<String> sendMessage(String message, int PttWord_page, int ppt_id) async {
     print("sending message ...");
     final response = await http.post(
       Uri.parse(baseUrl + "gpt/"),
@@ -12,7 +12,6 @@ class ApiService {
         'Content-Type': 'application/json; charset=UTF-8',
       },
       body: jsonEncode(<String, String>{
-        'class_class': class_id.toString(),
         'message': message,
         'pptword_page': PttWord_page.toString(),
         'ppt_ppt': ppt_id.toString(),

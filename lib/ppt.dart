@@ -12,8 +12,9 @@ const Color primaryColor = Color.fromARGB(255, 48, 48, 48);
 
 class PptPage extends StatefulWidget {
   final String filePath;
+  final int pptId;
 
-  const PptPage({Key? key, required this.filePath}) : super(key: key);
+  const PptPage({Key? key, required this.filePath, required this.pptId}) : super(key: key);
 
   @override
   _PptPageState createState() => _PptPageState();
@@ -34,6 +35,7 @@ class _PptPageState extends State<PptPage> {
             flex: 2,
             child: SlideView(
               filePath: widget.filePath,
+              pptId: widget.pptId,
               updateMessagesCallback: _updateMessages,
               pdfViewerController: _pdfViewerController,
               currentPageNumber: _currentPageNumber,
@@ -56,6 +58,7 @@ class _PptPageState extends State<PptPage> {
 
 class SlideView extends StatefulWidget {
   final String filePath;
+  final int pptId;
   final VoidCallback updateMessagesCallback;
   final PdfViewerController pdfViewerController;
   final ValueNotifier<int> currentPageNumber;
@@ -64,6 +67,7 @@ class SlideView extends StatefulWidget {
   const SlideView({
     Key? key,
     required this.filePath,
+    required this.pptId,
     required this.updateMessagesCallback,
     required this.pdfViewerController,
     required this.currentPageNumber,
@@ -78,13 +82,6 @@ class _SlideViewState extends State<SlideView> {
   final TextEditingController _controller = TextEditingController();
   GlobalKey _textFieldKey = GlobalKey();
   OverlayEntry? _overlayEntry;
-  // List<Map<String, String>> _items = [
-  //   {'title': '/生成英文講稿', 'description': '幫我生成英文講稿'},
-  //   {'title': '/本堂課程介紹', 'description': '幫我依據這頁的內容生成本堂課的課程介紹'},
-  //   {'title': '/生成示意圖', 'description': '幫我依據這頁的內容生成示意圖'},
-  //   {'title': '/產生隨堂測驗', 'description': '幫我依據這頁的內容產生隨堂測驗'},
-  //   {'title': '/指定文字風格、語氣', 'description': '幫我用...的文字風格來生成英文講稿'},
-  // ];
   List<Map<String, String>> _items  = [];
   List<Map<String, String>> _filteredItems = [];
 
@@ -231,13 +228,14 @@ class _SlideViewState extends State<SlideView> {
     if (text.isNotEmpty) {
       try {
       // 使用 await 等待 sendMessage 完成，並獲取返回值
-      String returnText = await ApiGpt.ApiService.sendMessage(5, text, 1, 4);
+      String returnText = await ApiGpt.ApiService.sendMessage(text, widget.currentPageNumber.value, widget.pptId);
       
       setState(() {
         // 更新 UI，添加發送的消息和回應的消息
         messages.add(ChatMessage(message: text, isSentByMe: true));
         messages.add(ChatMessage(message: returnText, isSentByMe: false));
         _controller.clear();  // 清除輸入框
+        _removeOverlay();     // 清除彈出層
       });
       
       // 更新消息回調
@@ -357,19 +355,3 @@ class _SlideViewState extends State<SlideView> {
     );
   }
 }
-
-// class Prompt {
-//   final int id;
-//   final String name;
-//   final String content;
-
-//   Prompt({required this.id, required this.name, required this.content});
-
-//   factory Prompt.fromJson(Map<String, dynamic> json) {
-//     return Prompt(
-//       id: json['prompt_id'],
-//       name: json['prompt_name'],
-//       content: json['prompt_content'],
-//     );
-//   }
-// }

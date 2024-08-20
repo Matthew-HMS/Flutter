@@ -1,3 +1,5 @@
+import 'dart:io';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:http/http.dart';
@@ -56,7 +58,7 @@ class _FilePageState extends State<FilePage> {
               onDelete: () => deletePptFileTile(Ppt.ppt_id),
               onUpdate: updateFileName,
               onTap: () {
-                navigateToPptPage();
+                navigateToPptPage(Ppt.ppt_id, Ppt.ppt_local_path);  // mark
               },
             );
           }).toList(),
@@ -98,7 +100,7 @@ class _FilePageState extends State<FilePage> {
     if (result != null) {
       String fileName = result.files.single.name;
       String filePath = result.files.single.path!;
-      addPptFileTile(fileName, filePath, widget.class_id);
+      addPptFileTile(fileName, filePath, widget.class_id);  // mark
     }
   }
 
@@ -111,11 +113,11 @@ class _FilePageState extends State<FilePage> {
     }
   }
 
-  void addPptFileTile(String fileName, String filePath, int class_id) async {
+  void addPptFileTile(String fileName, String filePath, int class_id) async { // mark
     try {      
       final response = await apiPpt.ApiService.createPpt(fileName, filePath, class_id);
       if (response.statusCode == 201) {
-        _fetchOtherFiles(); // 新增成功後重新載入課程
+        _fetchPptFiles(); // 新增成功後重新載入課程
       }           
     } catch (e) {
       print('Failed to create PptFile: $e');
@@ -172,10 +174,16 @@ class _FilePageState extends State<FilePage> {
     });
   }
 
-  void navigateToPptPage() {
+  void navigateToPptPage(int pptId, String ppt_local_path) { // mark
+    print("navigate to ppt in $ppt_local_path");
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => PptPage(filePath: "D:/NCU_Project/Flutter_project/flutter_application_ncu_emi/assets/user_data/test.pdf")),
+      MaterialPageRoute(
+        builder: (context) => PptPage(
+          filePath: ppt_local_path, 
+          pptId: pptId,
+        ),
+      ),
     );
   }
 
