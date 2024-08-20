@@ -50,8 +50,9 @@ class CourseManagementPageState extends State<CourseManagementPage> {
 
   void addCourseTile(String courseName) async {
     try {
+      // create course directory in /assets
       String basePath = Directory.current.path;  // 獲取當前專案的路徑
-      String directoryPath = '$basePath/user_data/$courseName';
+      String directoryPath = '$basePath/assets/$courseName';
       Directory newDirectory = Directory(directoryPath);
 
       if (!newDirectory.existsSync()) { // undo: must show alert if directory exists
@@ -61,8 +62,6 @@ class CourseManagementPageState extends State<CourseManagementPage> {
         if (response.statusCode == 201) {
           _fetchCourses(); // 新增成功後重新載入課程
         }
-        // courseFiles[courseName] = []; // Initialize the file list for the new course
-        // otherCourseFiles[courseName] = []; // Initialize the other file list for the new course
       } else {
         print('Directory already exists: $directoryPath');
       }      
@@ -77,7 +76,7 @@ class CourseManagementPageState extends State<CourseManagementPage> {
       if (response.statusCode == 204) {
         // 刪除對應的資料夾及其內容
         String basePath = Directory.current.path;  // 獲取當前專案的路徑
-        String directoryPath = '$basePath/user_data/$courseName';
+        String directoryPath = '$basePath/assets/$courseName';
         Directory directoryToDelete = Directory(directoryPath);
 
         if (directoryToDelete.existsSync()) {
@@ -95,13 +94,26 @@ class CourseManagementPageState extends State<CourseManagementPage> {
     }
   }
 
-  void updateCourseTileTitle(int class_id, String newCourseName, String CourseName) async {
+  void updateCourseTileTitle(int class_id, String newCourseName, String courseName) async {
     print('Class ID: $class_id, New Title: $newCourseName');
     Course course = Course(class_id: class_id, name: newCourseName, user_id: 1);
     try {
       final response = await ApiService.editCourse(course);
-      if (response.statusCode == 200) {    
-        _fetchCourses(); // 更新成功後重新載入課程
+      if (response.statusCode == 200) { 
+        // edit course directory in /assets
+        String basePath = Directory.current.path;
+        String directoryPath = '$basePath/assets/$courseName';
+        String newDirectoryPath = '$basePath/assets/$newCourseName';
+        Directory oldDirectory = Directory(directoryPath);
+        if (oldDirectory.existsSync()) {
+          // 重新命名資料夾
+          oldDirectory.renameSync(newDirectoryPath);
+          print('Directory renamed from $directoryPath to $newDirectoryPath');
+        } else {
+          print('Old directory does not exist: $directoryPath');
+        }
+        // reload course tiles
+        _fetchCourses();      
       }
     } catch (e) {
       print('Failed to update course: $e');
