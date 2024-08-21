@@ -100,7 +100,7 @@ class _FilePageState extends State<FilePage> {
     if (result != null) {
       String fileName = result.files.single.name;
       String filePath = result.files.single.path!;
-      addPptFileTile(fileName, filePath, widget.class_id);  // mark
+      addPptFileTile(fileName, filePath, widget.class_id, widget.courseName);  // mark
     }
   }
 
@@ -109,13 +109,13 @@ class _FilePageState extends State<FilePage> {
     if (result != null) {
       String fileName = result.files.single.name;
       String filePath = result.files.single.path!;
-      addOtherFileTile(fileName, filePath, widget.class_id);
+      addOtherFileTile(fileName, filePath, widget.class_id, widget.courseName);
     }
   }
 
-  void addPptFileTile(String fileName, String filePath, int class_id) async { // mark
+  void addPptFileTile(String fileName, String filePath, int class_id, String courseName) async { // mark
     try {      
-      final response = await apiPpt.ApiService.createPpt(fileName, filePath, class_id);
+      final response = await apiPpt.ApiService.createPpt(fileName, filePath, class_id, courseName);
       if (response.statusCode == 201) {
         _fetchPptFiles(); // 新增成功後重新載入課程
       }           
@@ -124,9 +124,9 @@ class _FilePageState extends State<FilePage> {
     }
   }
 
-  void addOtherFileTile(String fileName, String filePath, int class_id) async {
+  void addOtherFileTile(String fileName, String filePath, int class_id, String courseName) async {
     try {      
-      final response = await apiFile.ApiService.createFile(fileName, filePath, class_id);
+      final response = await apiFile.ApiService.createFile(fileName, filePath, class_id, courseName);
       if (response.statusCode == 201) {
         _fetchOtherFiles(); // 新增成功後重新載入課程
       }           
@@ -386,15 +386,21 @@ class _FileTileState extends State<FileTile> {
                       Icons.arrow_drop_down,
                       color: Colors.white,
                     ),
+                    // onSelected: (String newValue) {
+                    //   if (newValue == '編輯名稱') {
+                    //     showEditDialog(context);
+                    //   } else if (newValue == '刪除檔案') {
+                    //     widget.onDelete();
+                    //   }
+                    // },
                     onSelected: (String newValue) {
-                      if (newValue == '編輯名稱') {
-                        showEditDialog(context);
-                      } else if (newValue == '刪除檔案') {
+                      if (newValue == '刪除檔案') {
                         widget.onDelete();
                       }
                     },
                     itemBuilder: (BuildContext context) {
-                      return <String>['編輯名稱', '刪除檔案']
+                      // return <String>['編輯名稱', '刪除檔案']
+                      return <String>['刪除檔案']
                           .map<PopupMenuItem<String>>((String value) {
                         return PopupMenuItem<String>(
                           value: value,
@@ -416,38 +422,38 @@ class _FileTileState extends State<FileTile> {
     );
   }
 
-  void showEditDialog(BuildContext context) {
-    TextEditingController _controller = TextEditingController(text: _title);
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('編輯名稱'),
-          content: TextField(
-            controller: _controller,
-            decoration: InputDecoration(hintText: 'New title'),
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: Text('取消'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-            TextButton(
-              child: Text('保存'),
-              onPressed: () {
-                setState(() {
-                  String newTitle = _controller.text;
-                  widget.onUpdate(_title, newTitle);
-                  _title = newTitle;
-                });
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
+  // void showEditDialog(BuildContext context) {
+  //   TextEditingController _controller = TextEditingController(text: _title);
+  //   showDialog(
+  //     context: context,
+  //     builder: (BuildContext context) {
+  //       return AlertDialog(
+  //         title: Text('編輯名稱'),
+  //         content: TextField(
+  //           controller: _controller,
+  //           decoration: InputDecoration(hintText: 'New title'),
+  //         ),
+  //         actions: <Widget>[
+  //           TextButton(
+  //             child: Text('取消'),
+  //             onPressed: () {
+  //               Navigator.of(context).pop();
+  //             },
+  //           ),
+  //           TextButton(
+  //             child: Text('保存'),
+  //             onPressed: () {
+  //               setState(() {
+  //                 String newTitle = _controller.text;
+  //                 widget.onUpdate(_title, newTitle);
+  //                 _title = newTitle;
+  //               });
+  //               Navigator.of(context).pop();
+  //             },
+  //           ),
+  //         ],
+  //       );
+  //     },
+  //   );
+  // }
 }

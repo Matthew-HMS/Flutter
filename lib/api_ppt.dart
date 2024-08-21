@@ -18,7 +18,7 @@ class ApiService {
     }
   }
 
-  static Future<http.Response> createPpt(String name, String path, int class_id) async {
+  static Future<http.Response> createPpt(String name, String path, int class_id, String class_name) async {
     print("creating ppt");
     final response = await http.post(
       Uri.parse(baseUrl + "ppt/"),
@@ -29,6 +29,7 @@ class ApiService {
         'ppt_name': name,
         'ppt_local_path': path,
         'class_class': class_id.toString(),
+        'class_name': class_name,
       }),
     );
 
@@ -41,14 +42,14 @@ class ApiService {
   }
 
   // undo
-  static Future<http.Response> deletePpt(int file_id) async {
+  static Future<http.Response> deletePpt(int ppt_id) async {
     final response = await http.delete(
       Uri.parse(baseUrl + "ppt/"),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
       body: jsonEncode(<String, String>{
-        'file_id': file_id.toString(),        
+        'ppt_id': ppt_id.toString(),        
       }),
     );
 

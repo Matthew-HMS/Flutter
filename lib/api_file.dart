@@ -18,7 +18,7 @@ class ApiService {
     }
   }
 
-  static Future<http.Response> createFile(String name, String path, int class_id) async {
+  static Future<http.Response> createFile(String name, String path, int class_id, String class_name) async {
     final response = await http.post(
       Uri.parse(baseUrl + "file/"),
       headers: <String, String>{
@@ -28,6 +28,7 @@ class ApiService {
         'file_name': name,
         'file_path': path,
         'class_class': class_id.toString(),
+        'class_name': class_name,
       }),
     );
 

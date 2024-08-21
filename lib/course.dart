@@ -72,7 +72,9 @@ class CourseManagementPageState extends State<CourseManagementPage> {
 
   void deleteCourseTile(int class_id, String courseName) async {
     try {
+      print("call deleteCourseTile");
       final response = await ApiService.deleteCourse(class_id);
+      print('Response status code: ${response.statusCode}');
       if (response.statusCode == 204) {
         // 刪除對應的資料夾及其內容
         String basePath = Directory.current.path;  // 獲取當前專案的路徑
@@ -80,12 +82,16 @@ class CourseManagementPageState extends State<CourseManagementPage> {
         Directory directoryToDelete = Directory(directoryPath);
 
         if (directoryToDelete.existsSync()) {
-          // 刪除資料夾及其所有內容
-          directoryToDelete.deleteSync(recursive: true);
-          print('Directory deleted: $directoryPath');
-        } else {
-          print('Directory does not exist: $directoryPath');
-        }
+          try {
+            // 刪除資料夾及其所有內容
+            directoryToDelete.deleteSync(recursive: true);
+            print('Directory deleted: $directoryPath');
+          } catch (e) {
+            print('Failed to delete directory: $e');
+          }
+      } else {
+        print('Directory does not exist: $directoryPath');
+      }
 
         _fetchCourses(); // 刪除成功後重新載入課程
       }
