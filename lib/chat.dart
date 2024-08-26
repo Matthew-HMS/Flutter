@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
+import 'api_tts.dart' as apiTTS;
 
 const Color backgroundColor = Color.fromARGB(255, 61, 61, 61);
 const Color primaryColor = Color.fromARGB(255, 48, 48, 48);
 Map<int, List<Widget>> messagesByPage = {};
 List<Widget> messages = [
   ChatMessage(
-    message: "您好，需要什麼幫助呢？",
+    message: "Hello, how can I assist you?",
     isSentByMe: false,
   ),
 ];
@@ -114,6 +115,7 @@ class _ChatMessageState extends State<ChatMessage> {
               onPressed: () {
                 // Print the selected text when the volume_up button is clicked
                 print('Selected text: $selectedText');
+                apiTTS.GptTTS.streamedAudio(selectedText);
               },
             ),
           ],

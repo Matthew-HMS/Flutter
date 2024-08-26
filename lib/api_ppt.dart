@@ -88,17 +88,16 @@ class ApiService {
 class Ppt {
   final int ppt_id;
   String ppt_name;
-  String ppt_path;
+  // String ppt_path;
   String ppt_local_path;
   final int class_id;
   
-  Ppt({required this.ppt_id, required this.ppt_name, required this.ppt_path, required this.ppt_local_path, required this.class_id});
+  Ppt({required this.ppt_id, required this.ppt_name, required this.ppt_local_path, required this.class_id});
 
   factory Ppt.fromJson(Map<String, dynamic> json) {
     return Ppt(
       ppt_id: json['ppt_id'] as int,
       ppt_name: json['ppt_name'],
-      ppt_path: json['ppt_path'],
       ppt_local_path: json['ppt_local_path'],
       class_id: json['class_class'],
     );

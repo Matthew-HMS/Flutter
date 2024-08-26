@@ -53,7 +53,6 @@ class _FilePageState extends State<FilePage> {
             return FileTile(
               file_id: Ppt.ppt_id,
               title: Ppt.ppt_name,
-              file_path: Ppt.ppt_path,
               courseName: widget.courseName,
               onDelete: () => deletePptFileTile(Ppt.ppt_id),
               onUpdate: updateFileName,
@@ -308,7 +307,7 @@ class _FilePageState extends State<FilePage> {
 class FileTile extends StatefulWidget {
   final int file_id;
   final String title;
-  final String file_path;
+  final String? file_path;
   final String courseName;
   final Function() onDelete;
   final Function(String, String) onUpdate;
@@ -318,7 +317,7 @@ class FileTile extends StatefulWidget {
     Key? key,
     required this.file_id,
     required this.title,
-    required this.file_path,
+    this.file_path,
     required this.courseName,
     required this.onDelete,
     required this.onUpdate,
@@ -386,13 +385,6 @@ class _FileTileState extends State<FileTile> {
                       Icons.arrow_drop_down,
                       color: Colors.white,
                     ),
-                    // onSelected: (String newValue) {
-                    //   if (newValue == '編輯名稱') {
-                    //     showEditDialog(context);
-                    //   } else if (newValue == '刪除檔案') {
-                    //     widget.onDelete();
-                    //   }
-                    // },
                     onSelected: (String newValue) {
                       if (newValue == '刪除檔案') {
                         widget.onDelete();
@@ -422,38 +414,4 @@ class _FileTileState extends State<FileTile> {
     );
   }
 
-  // void showEditDialog(BuildContext context) {
-  //   TextEditingController _controller = TextEditingController(text: _title);
-  //   showDialog(
-  //     context: context,
-  //     builder: (BuildContext context) {
-  //       return AlertDialog(
-  //         title: Text('編輯名稱'),
-  //         content: TextField(
-  //           controller: _controller,
-  //           decoration: InputDecoration(hintText: 'New title'),
-  //         ),
-  //         actions: <Widget>[
-  //           TextButton(
-  //             child: Text('取消'),
-  //             onPressed: () {
-  //               Navigator.of(context).pop();
-  //             },
-  //           ),
-  //           TextButton(
-  //             child: Text('保存'),
-  //             onPressed: () {
-  //               setState(() {
-  //                 String newTitle = _controller.text;
-  //                 widget.onUpdate(_title, newTitle);
-  //                 _title = newTitle;
-  //               });
-  //               Navigator.of(context).pop();
-  //             },
-  //           ),
-  //         ],
-  //       );
-  //     },
-  //   );
-  // }
 }

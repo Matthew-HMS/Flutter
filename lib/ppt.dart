@@ -223,29 +223,37 @@ class _SlideViewState extends State<SlideView> {
     _overlayEntry = null;
   }
 
-  void _sendMessage() async{
+  void _sendMessage() async {
     final String text = _controller.text;    
     if (text.isNotEmpty) {
-      try {
-      // 使用 await 等待 sendMessage 完成，並獲取返回值
-      String returnText = await ApiGpt.ApiService.sendMessage(text, widget.currentPageNumber.value, widget.pptId);
-      
       setState(() {
-        // 更新 UI，添加發送的消息和回應的消息
+        // 先將用戶輸入的訊息加入 messages
         messages.add(ChatMessage(message: text, isSentByMe: true));
-        messages.add(ChatMessage(message: returnText, isSentByMe: false));
+        print("messages: $messages");
         _controller.clear();  // 清除輸入框
         _removeOverlay();     // 清除彈出層
+        // 更新消息回調
+        widget.updateMessagesCallback();
       });
-      
-      // 更新消息回調
-      widget.updateMessagesCallback();
-    } catch (e) {
-      // 異常處理
-      print('Error sending message: $e');
-    }
+
+      try {
+        // 使用 await 等待 sendMessage 完成，並獲取返回值
+        String returnText = await ApiGpt.ApiService.sendMessage(text, widget.currentPageNumber.value, widget.pptId);
+        
+        setState(() {
+          // 將返回的訊息加入 messages
+          messages.add(ChatMessage(message: returnText, isSentByMe: false));
+        });
+        
+        // 更新消息回調
+        widget.updateMessagesCallback();
+      } catch (e) {
+        // 異常處理
+        print('Error sending message: $e');
+      }
     }
   }
+
 
   void _lightbulbPressed() {
     _controller.selection = TextSelection.fromPosition(TextPosition(offset: _controller.text.length));

@@ -35,6 +35,8 @@ dependencies:
   http: ^1.2.2
   font_awesome_flutter: ^10.1.0
   flutter_markdown: ^0.6.0 # markdown
+  flutter_tts: ^3.6.3
+  audioplayers: ^5.2.1
 
 
   # The following adds the Cupertino Icons font to your application.
