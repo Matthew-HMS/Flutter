@@ -229,7 +229,7 @@ class _SlideViewState extends State<SlideView> {
       setState(() {
         // 先將用戶輸入的訊息加入 messages
         messages.add(ChatMessage(message: text, isSentByMe: true));
-        print("messages: $messages");
+        print("send messages to chat ...");
         _controller.clear();  // 清除輸入框
         _removeOverlay();     // 清除彈出層
         // 更新消息回調

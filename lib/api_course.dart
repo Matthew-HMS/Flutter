@@ -18,6 +18,7 @@ class ApiService {
   }
 
   static Future<http.Response> createCourse(String name, String content) async {
+    print('create class ...');
     final response = await http.post(
       Uri.parse(baseUrl + "classes/"),
       headers: <String, String>{
@@ -38,6 +39,7 @@ class ApiService {
   }
 
   static Future<http.Response> deleteCourse(int class_id) async {
+    print('delete class ...');
     final response = await http.delete(
       Uri.parse(baseUrl + "classes/"),
       headers: <String, String>{
@@ -57,6 +59,7 @@ class ApiService {
   }
 
   static Future<http.Response> editCourse(Course course) async {
+    print('edit class ...');
     final response = await http.patch(
       Uri.parse(baseUrl + "classes/"),
       headers: <String, String>{

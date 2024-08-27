@@ -10,7 +10,7 @@ class ApiService {
 
     if (response.statusCode == 200) {
       print('call ppt fetchModels');
-      print('Response body: ${response.body}'); // 查看原始 JSON 字串
+      // print('Response body: ${response.body}'); // 查看原始 JSON 字串
       List jsonResponse = json.decode(response.body);
       return jsonResponse.map((model) => Ppt.fromJson(model)).toList();
     } else {
@@ -19,7 +19,7 @@ class ApiService {
   }
 
   static Future<http.Response> createPpt(String name, String path, int class_id, String class_name) async {
-    print("creating ppt");
+    print("create ppt ...");
     final response = await http.post(
       Uri.parse(baseUrl + "ppt/"),
       headers: <String, String>{
@@ -43,6 +43,7 @@ class ApiService {
 
   // undo
   static Future<http.Response> deletePpt(int ppt_id) async {
+    print("delete ppt ...");
     final response = await http.delete(
       Uri.parse(baseUrl + "ppt/"),
       headers: <String, String>{
@@ -62,6 +63,7 @@ class ApiService {
   }
 
   static Future<http.Response> editPpt(Ppt ppt) async {
+    print("edit ppt ...");
     final response = await http.patch(
       Uri.parse(baseUrl + "file/"),
       headers: <String, String>{

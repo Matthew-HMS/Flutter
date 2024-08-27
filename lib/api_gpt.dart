@@ -5,7 +5,7 @@ class ApiService {
   static const String baseUrl = "http://127.0.0.1:8000/";
 
   static Future<String> sendMessage(String message, int PttWord_page, int ppt_id) async {
-    print("sending message ...");
+    print("send message to gpt ...");
     final response = await http.post(
       Uri.parse(baseUrl + "gpt/"),
       headers: <String, String>{

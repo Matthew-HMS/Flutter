@@ -135,7 +135,7 @@ class _FilePageState extends State<FilePage> {
   }
 
   void deletePptFileTile(int ppt_id) async {
-    try {      
+    try {
       final response = await apiPpt.ApiService.deletePpt(ppt_id);
       if (response.statusCode == 204) {
         _fetchPptFiles();

@@ -54,7 +54,7 @@ class GptTTS {
   static Future<void> streamedAudio(String inputText,
     {String model = inputModel, String voice = inputVoice}) async {
     try {
-      print("send tts request");
+      print("send tts request to openai ...");
       // // 確保 Flutter 框架已初始化
       // WidgetsFlutterBinding.ensureInitialized();
 

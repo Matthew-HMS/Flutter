@@ -10,7 +10,7 @@ class ApiService {
 
     if (response.statusCode == 200) {
       print('call file fetchModels');
-      print('Response body: ${response.body}'); // 查看原始 JSON 字串
+      // print('Response body: ${response.body}'); // 查看原始 JSON 字串
       List jsonResponse = json.decode(response.body);
       return jsonResponse.map((model) => File.fromJson(model)).toList();
     } else {
@@ -19,6 +19,7 @@ class ApiService {
   }
 
   static Future<http.Response> createFile(String name, String path, int class_id, String class_name) async {
+    print('create other file ...');
     final response = await http.post(
       Uri.parse(baseUrl + "file/"),
       headers: <String, String>{
@@ -41,7 +42,7 @@ class ApiService {
   }
 
   static Future<http.Response> deleteFile(int file_id) async {
-    print('call file deleteFile');
+    print('delete other file ...');
     final response = await http.delete(
       Uri.parse(baseUrl + "file/"),
       headers: <String, String>{
@@ -61,6 +62,7 @@ class ApiService {
   }
 
   static Future<http.Response> editFile(File file) async {
+    print('edit other file ...');
     final response = await http.patch(
       Uri.parse(baseUrl + "file/"),
       headers: <String, String>{

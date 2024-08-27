@@ -8,6 +8,7 @@ class ApiService {
     final response = await http.get(Uri.parse(baseUrl + "prompt/"));
 
     if (response.statusCode == 200) {
+      print('call prompt fetchModels');
       // print('Response body: ${response.body}'); // 查看原始 JSON 字串
       List jsonResponse = json.decode(response.body);
       return jsonResponse.map((model) => Prompt.fromJson(model)).toList();
@@ -17,6 +18,7 @@ class ApiService {
   }
 
   static Future<http.Response> createPrompt(String name, String content) async {
+    print('create prompt ...');
     final response = await http.post(
       Uri.parse(baseUrl + "prompt/"),
       headers: <String, String>{
@@ -38,6 +40,7 @@ class ApiService {
   }
 
   static Future<http.Response> deletePrompt(int prompt_id) async {
+    print('delete prompt ...');
     final response = await http.delete(
       Uri.parse(baseUrl + "prompt/"),
       headers: <String, String>{
@@ -57,6 +60,7 @@ class ApiService {
   }
 
   static Future<http.Response> editPrompt(Prompt prompt) async {
+    print('edit prompt ...');
     final response = await http.patch(
       Uri.parse(baseUrl + "prompt/"),
       headers: <String, String>{
