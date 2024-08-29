@@ -90,25 +90,56 @@ class _SlideViewState extends State<SlideView> {
     super.initState();
     _controller.addListener(_onTextChanged);
     fetchPrompts(); // 加載 API 數據
+    fetchChat(widget.currentPageNumber.value, widget.pptId);
   }
 
-  Future<void> fetchPrompts() async {
+  Future<void> fetchChat(int page, int ppt_id) async {
   try {
-    List<ApiPrompt.Prompt> prompts = await ApiPrompt.ApiService.fetchModels();
-    setState(() {
-      _filteredItems = prompts.map((prompt) {
-        return {
-          'title': prompt.name,
-          'description': prompt.content,
-          'id': prompt.prompt_id.toString(),
-        };
-      }).toList();
-      _items = _filteredItems; // 初始化 _items 為獲取到的數據
-    });
+    messages.clear();
+    List<Map<String, dynamic>> jsonResponse = await ApiGpt.ApiService.fetchModels(page+1, ppt_id);
+    if (jsonResponse.isEmpty) {      
+      messages.add(
+        ChatMessage(
+          message: "Hello, how can I assist you?",
+          isSentByMe: false,
+        )
+      );
+    }
+    for (var item in jsonResponse) {
+      messages.add(ChatMessage(
+        message: item['pptword_question'],
+        isSentByMe: true,
+      ));
+      messages.add(ChatMessage(
+        message: item['pptword_content'],
+        isSentByMe: false,
+      ));
+    }
+
+    widget.updateMessagesCallback();
   } catch (e) {
-    print('Failed to load prompts: $e');
+    print('Failed to load chat: $e');
   }
 }
+
+
+  Future<void> fetchPrompts() async {
+    try {
+      List<ApiPrompt.Prompt> prompts = await ApiPrompt.ApiService.fetchModels();
+      setState(() {
+        _filteredItems = prompts.map((prompt) {
+          return {
+            'title': prompt.name,
+            'description': prompt.content,
+            'id': prompt.prompt_id.toString(),
+          };
+        }).toList();
+        _items = _filteredItems; // 初始化 _items 為獲取到的數據
+      });
+    } catch (e) {
+      print('Failed to load prompts: $e');
+    }
+  }
 
   @override
   void dispose() {
@@ -298,6 +329,7 @@ class _SlideViewState extends State<SlideView> {
                 icon: Icon(Icons.arrow_back, color: Colors.white),
                 onPressed: () {
                   widget.pdfViewerController.previousPage();
+                  fetchChat(widget.currentPageNumber.value - 1, widget.pptId);
                 },
               ),
               ValueListenableBuilder<int>(
@@ -318,6 +350,7 @@ class _SlideViewState extends State<SlideView> {
                 icon: Icon(Icons.arrow_forward, color: Colors.white),
                 onPressed: () {
                   widget.pdfViewerController.nextPage();
+                  fetchChat(widget.currentPageNumber.value - 1, widget.pptId);
                 },
               ),
             ],

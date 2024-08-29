@@ -6,10 +6,7 @@ const Color backgroundColor = Color.fromARGB(255, 61, 61, 61);
 const Color primaryColor = Color.fromARGB(255, 48, 48, 48);
 Map<int, List<Widget>> messagesByPage = {};
 List<Widget> messages = [
-  ChatMessage(
-    message: "Hello, how can I assist you?",
-    isSentByMe: false,
-  ),
+  
 ];
 
 class ChatSidebar extends StatefulWidget {
