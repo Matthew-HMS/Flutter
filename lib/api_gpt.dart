@@ -5,11 +5,9 @@ class ApiService {
   static const String baseUrl = "http://127.0.0.1:8000/";
 
   static Future<List<Map<String, dynamic>>> fetchModels(int pptword_page, int ppt_ppt) async {
-    print("fetch $pptword_page page in ppt $ppt_ppt");
+    print("fetch page $pptword_page in ppt $ppt_ppt");
     final url = Uri.parse(baseUrl + "gpt/?pptword_page=$pptword_page&ppt_ppt=$ppt_ppt");
     final response = await http.get(url);
-
-    print(response.body);
 
     if (response.statusCode == 200) {
       List<Map<String, dynamic>> jsonResponse = List<Map<String, dynamic>>.from(json.decode(response.body));

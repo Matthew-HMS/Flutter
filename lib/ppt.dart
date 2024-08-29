@@ -96,7 +96,7 @@ class _SlideViewState extends State<SlideView> {
   Future<void> fetchChat(int page, int ppt_id) async {
   try {
     messages.clear();
-    List<Map<String, dynamic>> jsonResponse = await ApiGpt.ApiService.fetchModels(page+1, ppt_id);
+    List<Map<String, dynamic>> jsonResponse = await ApiGpt.ApiService.fetchModels(page, ppt_id);
     if (jsonResponse.isEmpty) {      
       messages.add(
         ChatMessage(
@@ -328,8 +328,8 @@ class _SlideViewState extends State<SlideView> {
               IconButton(
                 icon: Icon(Icons.arrow_back, color: Colors.white),
                 onPressed: () {
-                  widget.pdfViewerController.previousPage();
                   fetchChat(widget.currentPageNumber.value - 1, widget.pptId);
+                  widget.pdfViewerController.previousPage();                  
                 },
               ),
               ValueListenableBuilder<int>(
@@ -349,8 +349,8 @@ class _SlideViewState extends State<SlideView> {
               IconButton(
                 icon: Icon(Icons.arrow_forward, color: Colors.white),
                 onPressed: () {
-                  widget.pdfViewerController.nextPage();
-                  fetchChat(widget.currentPageNumber.value - 1, widget.pptId);
+                  fetchChat(widget.currentPageNumber.value + 1, widget.pptId);
+                  widget.pdfViewerController.nextPage();                  
                 },
               ),
             ],
