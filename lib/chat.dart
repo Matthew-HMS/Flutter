@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 const Color backgroundColor = Color.fromARGB(255, 61, 61, 61);
 const Color primaryColor = Color.fromARGB(255, 48, 48, 48);
-Map<int, List<Widget>> messagesByPage = {};
+
 List<Widget> messages = [
   ChatMessage(
     message: "您好，需要什麼幫助呢？",
@@ -15,22 +15,19 @@ List<Widget> messages = [
 ];
 
 class ChatSidebar extends StatefulWidget {
+  final VoidCallback scrollToBottomCallback; // Step 1: Add callback
+  final ScrollController scrollController;
+
+  ChatSidebar({required this.scrollToBottomCallback, required this.scrollController});
+
   @override
   _ChatSidebarState createState() => _ChatSidebarState();
 }
 
 class _ChatSidebarState extends State<ChatSidebar> {
-  final ScrollController _scrollController = ScrollController(); // Step 1: Declare ScrollController
-
-  @override
-  void initState() {
-    super.initState();
-    // Initialize your ScrollController here if needed
-  }
-
   @override
   void dispose() {
-    _scrollController.dispose(); // Dispose of the ScrollController
+    widget.scrollController.dispose(); // Dispose of the ScrollController
     super.dispose();
   }
 
@@ -41,12 +38,12 @@ class _ChatSidebarState extends State<ChatSidebar> {
       child: Scrollbar(
         thickness: 6.0,
         radius: Radius.circular(10),
-        controller: _scrollController, // Connect the Scrollbar to the ScrollController
+        controller: widget.scrollController, // Connect the Scrollbar to the ScrollController
         child: Column(
           children: <Widget>[
             Expanded(
               child: ListView.builder(
-                controller: _scrollController, // Step 4: Assign the ScrollController to ListView.builder
+                controller: widget.scrollController, // Step 4: Assign the ScrollController to ListView.builder
                 padding: EdgeInsets.all(10),
                 itemCount: messages.length,
                 itemBuilder: (context, index) => messages[index],
@@ -117,6 +114,7 @@ class _ChatMessageState extends State<ChatMessage> {
         ),
       );
     }
+
     return Align(
       alignment: widget.isSentByMe ? Alignment.centerRight : Alignment.centerLeft,
       child: messageWidget,

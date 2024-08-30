@@ -10,7 +10,6 @@ const Color primaryColor = Color.fromARGB(255, 48, 48, 48);
 
 class PptPage extends StatefulWidget {
   final String filePath;
-
   const PptPage({Key? key, required this.filePath}) : super(key: key);
 
   @override
@@ -21,6 +20,20 @@ class _PptPageState extends State<PptPage> {
   final PdfViewerController _pdfViewerController = PdfViewerController();
   final ValueNotifier<int> _currentPageNumber = ValueNotifier<int>(1);
   final ValueNotifier<int> _totalPageNumber = ValueNotifier<int>(0);
+  final ScrollController _scrollController = ScrollController(); // Add this line
+
+  void _scrollToBottom() {
+    // This function will be passed to ChatSidebar
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -36,11 +49,15 @@ class _PptPageState extends State<PptPage> {
               pdfViewerController: _pdfViewerController,
               currentPageNumber: _currentPageNumber,
               totalPageNumber: _totalPageNumber,
+              scrollToBottomCallback: _scrollToBottom, // Pass the callback
             ),
           ),
           Expanded(
             flex: 1,
-            child: ChatSidebar(),
+            child: ChatSidebar(
+              scrollToBottomCallback: _scrollToBottom,
+              scrollController: _scrollController,
+            ),
           ),
         ],
       ),
@@ -49,6 +66,7 @@ class _PptPageState extends State<PptPage> {
 
   void _updateMessages() {
     setState(() {});
+    _scrollToBottom();
   }
 }
 
@@ -58,6 +76,7 @@ class SlideView extends StatefulWidget {
   final PdfViewerController pdfViewerController;
   final ValueNotifier<int> currentPageNumber;
   final ValueNotifier<int> totalPageNumber;
+  final VoidCallback scrollToBottomCallback; // Step 2: Add callback
 
   const SlideView({
     Key? key,
@@ -66,6 +85,7 @@ class SlideView extends StatefulWidget {
     required this.pdfViewerController,
     required this.currentPageNumber,
     required this.totalPageNumber,
+    required this.scrollToBottomCallback, // Step 2: Add callback
   }) : super(key: key);
 
   @override
@@ -89,6 +109,7 @@ class _SlideViewState extends State<SlideView> {
     {'title': '指定文字風格、語氣', 'description': '幫我用...的文字風格來生成英文講稿'},
   ];
   List<Map<String, String>> _filteredItems = [];
+  bool _isSent = false;
 
   @override
   void initState() {
@@ -106,11 +127,9 @@ class _SlideViewState extends State<SlideView> {
   void _onTextChanged() {
     final query = _controller.text.toLowerCase();
     final queryAfterSlash = query.contains('/') ? query.split('/').last : query;
-
     _filteredItems = _items.where((item) {
       final title = item['title']!.toLowerCase();
       final description = item['description']!.toLowerCase();
-      
       return title.contains(queryAfterSlash) || description.contains(queryAfterSlash);
     }).toList();
     _toggleOverlay();
@@ -134,6 +153,7 @@ class _SlideViewState extends State<SlideView> {
     final double listItemHeight = 65.0;
     final double listHeight = min(_filteredItems.length * listItemHeight, maxVisibleItems * listItemHeight);
     final bool shouldShowAbove = listHeight > availableSpaceBelow && listHeight < availableSpaceAbove;
+
     double overlayTop;
     double overlayHeight;
 
@@ -214,8 +234,17 @@ class _SlideViewState extends State<SlideView> {
       setState(() {
         messages.add(ChatMessage(message: text, isSentByMe: true));
         _controller.clear();
+        _isSent = true;
       });
       widget.updateMessagesCallback();
+      widget.scrollToBottomCallback(); // Step 3: Call the callback
+
+      // Reset the icon after a delay
+      Future.delayed(Duration(seconds: 2), () {
+        setState(() {
+          _isSent = false;
+        });
+      });
     }
   }
 
@@ -296,7 +325,7 @@ class _SlideViewState extends State<SlideView> {
                   key: _textFieldKey,
                   controller: _controller,
                   decoration: InputDecoration(
-                    hintText: "Type your prompt...",
+                    hintText: "Type '/' to search prompts",
                     hintStyle: TextStyle(color: Colors.white),
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
                     prefixIcon: Padding(
@@ -308,9 +337,17 @@ class _SlideViewState extends State<SlideView> {
                     ),
                     suffixIcon: Padding(
                       padding: EdgeInsets.only(right: 8.0),
-                      child: IconButton(
-                        icon: Icon(FontAwesomeIcons.paperPlane, size: 20.0, color: Colors.white),
-                        onPressed: _sendMessage,
+                      child: GestureDetector(
+                        onTap: _sendMessage,
+                        child: AnimatedSwitcher(
+                          duration: Duration(milliseconds: 300),
+                          transitionBuilder: (Widget child, Animation<double> animation) {
+                            return ScaleTransition(child: child, scale: animation);
+                          },
+                          child: _isSent
+                              ? Icon(Icons.check_circle, key: ValueKey<int>(1), size: 20.0, color: Colors.white)
+                              : Icon(FontAwesomeIcons.paperPlane, key: ValueKey<int>(0), size: 20.0, color: Colors.white),
+                        ),
                       ),
                     ),
                   ),
