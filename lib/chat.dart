@@ -112,7 +112,13 @@ class _ChatMessageState extends State<ChatMessage> {
               onPressed: () {
                 // Print the selected text when the volume_up button is clicked
                 print('Selected text: $selectedText');
-                apiTTS.GptTTS.streamedAudio(selectedText);
+                if (selectedText == null || selectedText.isEmpty) {
+                  print("please select text");
+                  // apiTTS.GptTTS.streamedAudio(selectedText);
+                }
+                else{                  
+                  apiTTS.GptTTS.streamedAudio(selectedText);
+                }
               },
             ),
           ],

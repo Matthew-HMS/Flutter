@@ -84,6 +84,7 @@ class _SlideViewState extends State<SlideView> {
   OverlayEntry? _overlayEntry;
   List<Map<String, String>> _items  = [];
   List<Map<String, String>> _filteredItems = [];
+  int _previousPageNumber = 1;
 
   @override
   void initState() {
@@ -312,6 +313,15 @@ class _SlideViewState extends State<SlideView> {
               controller: widget.pdfViewerController,
               pageLayoutMode: PdfPageLayoutMode.single,
               onPageChanged: (PdfPageChangedDetails details) {
+                // detect page change
+                if (details.newPageNumber > _previousPageNumber) {
+                  // print("next page by wheel");
+                  fetchChat(details.newPageNumber, widget.pptId);
+                } else if (details.newPageNumber < _previousPageNumber) {
+                  // print("last page by wheel");
+                  fetchChat(details.newPageNumber, widget.pptId);
+                }
+                _previousPageNumber = details.newPageNumber;
                 widget.currentPageNumber.value = details.newPageNumber;
               },
               onDocumentLoaded: (PdfDocumentLoadedDetails details) {
@@ -328,7 +338,7 @@ class _SlideViewState extends State<SlideView> {
               IconButton(
                 icon: Icon(Icons.arrow_back, color: Colors.white),
                 onPressed: () {
-                  fetchChat(widget.currentPageNumber.value - 1, widget.pptId);
+                  // fetchChat(widget.currentPageNumber.value - 1, widget.pptId);
                   widget.pdfViewerController.previousPage();                  
                 },
               ),
@@ -349,7 +359,7 @@ class _SlideViewState extends State<SlideView> {
               IconButton(
                 icon: Icon(Icons.arrow_forward, color: Colors.white),
                 onPressed: () {
-                  fetchChat(widget.currentPageNumber.value + 1, widget.pptId);
+                  // fetchChat(widget.currentPageNumber.value + 1, widget.pptId);
                   widget.pdfViewerController.nextPage();                  
                 },
               ),

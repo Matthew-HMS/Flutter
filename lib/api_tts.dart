@@ -45,7 +45,7 @@ class LocalTTS {
 }
 
 class GptTTS {
-  static String? secretKey = Platform.environment['OPENAI_API_KEY'];
+  static String? secretKey = Platform.environment["OPENAI_API_KEY"];
   static const String inputModel = "tts-1";
   static const String inputVoice = "echo";
   static const String apiUrl = "https://api.openai.com/v1/audio/speech";
@@ -59,15 +59,15 @@ class GptTTS {
       // WidgetsFlutterBinding.ensureInitialized();
 
       final headers = {
-        'Authorization': 'Bearer $secretKey',
-        'Content-Type': 'application/json',
+        "Authorization": "Bearer $secretKey",
+        "Content-Type": "application/json",
       };
 
       final data = jsonEncode({
-        'model': model,
-        'input': inputText,
-        'voice': voice,
-        'response_format': 'mp3',
+        "model": model,
+        "input": inputText,
+        "voice": voice,
+        "response_format": "mp3",
       });
 
       final response = await http.post(Uri.parse(apiUrl),
