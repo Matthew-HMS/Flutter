@@ -5,27 +5,38 @@ import 'api_tts.dart' as apiTTS;
 const Color backgroundColor = Color.fromARGB(255, 61, 61, 61);
 const Color primaryColor = Color.fromARGB(255, 48, 48, 48);
 Map<int, List<Widget>> messagesByPage = {};
-List<Widget> messages = [
-  
-];
+List<Widget> messages = [];
 
 class ChatSidebar extends StatefulWidget {
-  @override
+
+  // 0902
+  final VoidCallback scrollToBottomCallback; // Step 1: Add callback
+  final ScrollController scrollController;
+  ChatSidebar({required this.scrollToBottomCallback, required this.scrollController});
+  //
+
   _ChatSidebarState createState() => _ChatSidebarState();
 }
 
 class _ChatSidebarState extends State<ChatSidebar> {
-  final ScrollController _scrollController = ScrollController(); // Step 1: Declare ScrollController
+  // 0902
+  // final ScrollController _scrollController = ScrollController(); // Step 1: Declare ScrollController
 
-  @override
-  void initState() {
-    super.initState();
-    // Initialize your ScrollController here if needed
-  }
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   // Initialize your ScrollController here if needed
+  // }
+  //
 
   @override
   void dispose() {
-    _scrollController.dispose(); // Dispose of the ScrollController
+    
+    //0902
+    // _scrollController.dispose(); // Dispose of the ScrollController
+    widget.scrollController.dispose();
+    //
+
     super.dispose();
   }
 
@@ -36,15 +47,22 @@ class _ChatSidebarState extends State<ChatSidebar> {
       child: Scrollbar(
         thickness: 6.0,
         radius: Radius.circular(10),
-        controller: _scrollController, // Connect the Scrollbar to the ScrollController
+        //0902
+        // controller: _scrollController, // Connect the Scrollbar to the ScrollController
+        controller: widget.scrollController, // Connect the Scrollbar to the ScrollController
         child: Column(
           children: <Widget>[
             Expanded(
               child: ListView.builder(
-                controller: _scrollController, // Step 4: Assign the ScrollController to ListView.builder
+                controller: widget.scrollController, // Step 4: Assign the ScrollController to ListView.builder
                 padding: EdgeInsets.all(10),
-                itemCount: messages.length,
-                itemBuilder: (context, index) => messages[index],
+                itemCount: messages.isEmpty ? 1 : messages.length,
+                itemBuilder: (context, index) {
+                  if (messages.isEmpty) {
+                    return Center(child: Text("No messages yet."));
+                  }
+                  return messages[index];
+                }
               ),
             ),
           ],

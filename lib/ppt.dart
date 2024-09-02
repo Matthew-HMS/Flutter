@@ -24,6 +24,22 @@ class _PptPageState extends State<PptPage> {
   final PdfViewerController _pdfViewerController = PdfViewerController();
   final ValueNotifier<int> _currentPageNumber = ValueNotifier<int>(1);
   final ValueNotifier<int> _totalPageNumber = ValueNotifier<int>(0);
+  final ScrollController _scrollController = ScrollController(); // Add this line
+
+  void _scrollToBottom() {
+    // print("call _scrollToBottom");
+    // This function will be passed to ChatSidebar
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        // print(_scrollController.position.maxScrollExtent);
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: Duration(milliseconds: 500), //add anime time
+          curve: Curves.easeOut,
+        );
+      }
+    });    
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -40,11 +56,15 @@ class _PptPageState extends State<PptPage> {
               pdfViewerController: _pdfViewerController,
               currentPageNumber: _currentPageNumber,
               totalPageNumber: _totalPageNumber,
+              scrollToBottomCallback: _scrollToBottom, // Pass the callback
             ),
           ),
           Expanded(
             flex: 1,
-            child: ChatSidebar(),
+            child: ChatSidebar(
+              scrollToBottomCallback: _scrollToBottom,
+              scrollController: _scrollController,
+            ),
           ),
         ],
       ),
@@ -52,7 +72,9 @@ class _PptPageState extends State<PptPage> {
   }
 
   void _updateMessages() {
+    // print("call _updateMessages");
     setState(() {});
+    _scrollToBottom();
   }
 }
 
@@ -63,6 +85,7 @@ class SlideView extends StatefulWidget {
   final PdfViewerController pdfViewerController;
   final ValueNotifier<int> currentPageNumber;
   final ValueNotifier<int> totalPageNumber;
+  final VoidCallback scrollToBottomCallback; // Step 2: Add callback
 
   const SlideView({
     Key? key,
@@ -72,6 +95,7 @@ class SlideView extends StatefulWidget {
     required this.pdfViewerController,
     required this.currentPageNumber,
     required this.totalPageNumber,
+    required this.scrollToBottomCallback, // Step 2: Add callback
   }) : super(key: key);
 
   @override
@@ -85,6 +109,7 @@ class _SlideViewState extends State<SlideView> {
   List<Map<String, String>> _items  = [];
   List<Map<String, String>> _filteredItems = [];
   int _previousPageNumber = 1;
+  bool _isSent = false;
 
   @override
   void initState() {
@@ -95,33 +120,43 @@ class _SlideViewState extends State<SlideView> {
   }
 
   Future<void> fetchChat(int page, int ppt_id) async {
-  try {
-    messages.clear();
-    List<Map<String, dynamic>> jsonResponse = await ApiGpt.ApiService.fetchModels(page, ppt_id);
-    if (jsonResponse.isEmpty) {      
-      messages.add(
-        ChatMessage(
+    // print("call fetch chat");
+    try {
+      messages.clear();
+      List<Map<String, dynamic>> jsonResponse = await ApiGpt.ApiService.fetchModels(page, ppt_id);
+      
+      if (jsonResponse.isEmpty) {      
+        messages.add(ChatMessage(
           message: "Hello, how can I assist you?",
           isSentByMe: false,
-        )
-      );
-    }
-    for (var item in jsonResponse) {
-      messages.add(ChatMessage(
-        message: item['pptword_question'],
-        isSentByMe: true,
-      ));
-      messages.add(ChatMessage(
-        message: item['pptword_content'],
-        isSentByMe: false,
-      ));
-    }
+        ));
+      }
 
-    widget.updateMessagesCallback();
-  } catch (e) {
-    print('Failed to load chat: $e');
+      for (var item in jsonResponse) {
+        messages.add(ChatMessage(
+          message: item['pptword_question'],
+          isSentByMe: true,
+        ));
+        messages.add(ChatMessage(
+          message: item['pptword_content'],
+          isSentByMe: false,
+        ));
+      }
+
+      widget.updateMessagesCallback();
+
+      Future.delayed(Duration(milliseconds: 500), () {
+        widget.scrollToBottomCallback();
+      });
+
+      // print("end call chat fetch");
+    } catch (e) {
+      print('Failed to load chat: $e');
+    }
   }
-}
+
+
+
 
 
   Future<void> fetchPrompts() async {
@@ -263,9 +298,18 @@ class _SlideViewState extends State<SlideView> {
         messages.add(ChatMessage(message: text, isSentByMe: true));
         print("send messages to chat ...");
         _controller.clear();  // 清除輸入框
+        _isSent = true;
         _removeOverlay();     // 清除彈出層
         // 更新消息回調
         widget.updateMessagesCallback();
+        widget.scrollToBottomCallback(); // Step 3: Call the callback
+
+        // // Reset the icon after a delay
+        // Future.delayed(Duration(seconds: 2), () {
+        //   setState(() {
+        //     _isSent = false;
+        //   });
+        // });
       });
 
       try {
@@ -275,6 +319,7 @@ class _SlideViewState extends State<SlideView> {
         setState(() {
           // 將返回的訊息加入 messages
           messages.add(ChatMessage(message: returnText, isSentByMe: false));
+          _isSent = false; // API 回應完成後重置動畫
         });
         
         // 更新消息回調
@@ -282,6 +327,9 @@ class _SlideViewState extends State<SlideView> {
       } catch (e) {
         // 異常處理
         print('Error sending message: $e');
+        setState(() {
+          _isSent = false; // 出錯後也要重置動畫
+        });
       }
     }
   }
@@ -375,7 +423,7 @@ class _SlideViewState extends State<SlideView> {
                   key: _textFieldKey,
                   controller: _controller,
                   decoration: InputDecoration(
-                    hintText: "Type your prompt...",
+                    hintText: "Type '/' to search prompts",
                     hintStyle: TextStyle(color: Colors.white),
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
                     prefixIcon: Padding(
@@ -387,9 +435,17 @@ class _SlideViewState extends State<SlideView> {
                     ),
                     suffixIcon: Padding(  // send message button
                       padding: EdgeInsets.only(right: 8.0),
-                      child: IconButton(
-                        icon: Icon(FontAwesomeIcons.paperPlane, size: 20.0, color: Colors.white),
-                        onPressed: _sendMessage,
+                      child: GestureDetector(
+                        onTap: _sendMessage,
+                        child: AnimatedSwitcher(
+                          duration: Duration(milliseconds: 300),
+                          transitionBuilder: (Widget child, Animation<double> animation) {
+                            return ScaleTransition(child: child, scale: animation);
+                          },
+                          child: _isSent
+                              ? Icon(Icons.check_circle, key: ValueKey<int>(1), size: 20.0, color: Colors.white)
+                              : Icon(FontAwesomeIcons.paperPlane, key: ValueKey<int>(0), size: 20.0, color: Colors.white),
+                        ),
                       ),
                     ),
                   ),
