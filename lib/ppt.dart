@@ -145,6 +145,7 @@ class _SlideViewState extends State<SlideView> {
 
       widget.updateMessagesCallback();
 
+      // delay to wait chat load finish
       Future.delayed(Duration(milliseconds: 500), () {
         widget.scrollToBottomCallback();
       });

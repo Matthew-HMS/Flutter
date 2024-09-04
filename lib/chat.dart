@@ -84,6 +84,16 @@ class ChatMessage extends StatefulWidget {
 
 class _ChatMessageState extends State<ChatMessage> {
   String selectedText = "";
+  bool isPlayingAudio = false;
+
+  void initState() {
+    super.initState();
+    apiTTS.GptTTS.setAudioCompleteCallback(() {
+      setState(() {
+        isPlayingAudio = false; // 更新狀態為停止
+      });
+    });
+  }
 
   void _handleSelectionChange(TextSelection selection, SelectionChangedCause? cause) {
     if (cause == SelectionChangedCause.longPress || cause == SelectionChangedCause.drag) {
@@ -126,16 +136,36 @@ class _ChatMessageState extends State<ChatMessage> {
               child: messageWidget,
             ),
             IconButton(
-              icon: Icon(Icons.volume_up_rounded, size: 30, color: Colors.white),
-              onPressed: () {
-                // Print the selected text when the volume_up button is clicked
-                print('Selected text: $selectedText');
-                if (selectedText == null || selectedText.isEmpty) {
-                  print("please select text");
-                  // apiTTS.GptTTS.streamedAudio(selectedText);
-                }
-                else{                  
-                  apiTTS.GptTTS.streamedAudio(selectedText);
+              icon: Icon(
+                // apiTTS.GptTTS.isPlayingAudio() ? Icons.stop : Icons.volume_up_rounded, // 更新圖標根據播放狀態
+                isPlayingAudio ? Icons.stop : Icons.volume_up_rounded,
+                size: 30,
+                color: Colors.white,
+              ),
+              onPressed: () async {
+                if (isPlayingAudio) {
+                  // stop playing audio 
+                  await apiTTS.GptTTS.stopAudio();
+                  selectedText = "";
+                  setState(() {
+                    isPlayingAudio = false; 
+                  });
+                } else {
+                  // play audio                 
+                  if (selectedText.isNotEmpty) {
+                    setState(() {
+                      isPlayingAudio = true; 
+                    }); 
+                    await apiTTS.GptTTS.streamedAudio(selectedText);
+                    print("start playing selected audio");
+                  } else {
+                    setState(() {
+                      isPlayingAudio = true; 
+                    }); 
+                    await apiTTS.GptTTS.streamedAudio(widget.message);
+                    print("start playing all audio");
+                  }
+                  selectedText = "";
                 }
               },
             ),

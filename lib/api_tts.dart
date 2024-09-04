@@ -49,14 +49,16 @@ class GptTTS {
   static const String inputModel = "tts-1";
   static const String inputVoice = "echo";
   static const String apiUrl = "https://api.openai.com/v1/audio/speech";
+  static AudioPlayer? _audioPlayer; // 用來存儲 AudioPlayer 實例
+  static Function? onAudioCompleteCallback; // 用來存儲回調函數
+
+  
 
   // Function to convert text to speech and play it
   static Future<void> streamedAudio(String inputText,
-    {String model = inputModel, String voice = inputVoice}) async {
+      {String model = inputModel, String voice = inputVoice}) async {
     try {
       print("send tts request to openai ...");
-      // // 確保 Flutter 框架已初始化
-      // WidgetsFlutterBinding.ensureInitialized();
 
       final headers = {
         "Authorization": "Bearer $secretKey",
@@ -76,19 +78,21 @@ class GptTTS {
       if (response.statusCode == 200) {
         final audioBytes = response.bodyBytes;
 
-        // // 確保音頻播放在主線程上執行
-        // WidgetsBinding.instance.addPostFrameCallback((_) async {
-        //   final audioPlayer = AudioPlayer();
-        //   await audioPlayer.play(BytesSource(audioBytes));
-        // });
-         await Future.sync(() async {
-          final audioPlayer = AudioPlayer();
-          await audioPlayer.play(BytesSource(audioBytes));
-        });
+        _audioPlayer = AudioPlayer(); // 初始化 AudioPlayer
+        await _audioPlayer!.play(BytesSource(audioBytes));
+
+        // 監聽音頻播放完成事件
+      _audioPlayer!.onPlayerComplete.listen((event) {
+        _audioPlayer = null; // 釋放 AudioPlayer 資源
+        print("finish playing audio");
+        if (onAudioCompleteCallback != null) {
+          onAudioCompleteCallback!(); // 調用回調函數
+        }
+      });
+
       } else {
         if (kDebugMode) {
-          print(
-              'Error with HTTP request: ${response.statusCode} - ${response.reasonPhrase}');
+          print('Error with HTTP request: ${response.statusCode} - ${response.reasonPhrase}');
         }
       }
     } catch (e) {
@@ -97,4 +101,21 @@ class GptTTS {
       }
     }
   }
+
+  // Function to stop the audio
+  static Future<void> stopAudio() async {
+    if (_audioPlayer != null) {
+      await _audioPlayer!.stop(); // 停止音頻播放
+      _audioPlayer = null; // 釋放 AudioPlayer 資源
+      print("Audio stopped");
+    } else {
+      print("No audio playing");
+    }
+  }
+
+  // 設置回調函數的靜態方法
+  static void setAudioCompleteCallback(Function callback) {
+    onAudioCompleteCallback = callback;
+  }
 }
+
