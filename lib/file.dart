@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:path/path.dart' as path;
 import 'course.dart';
 import 'ppt.dart';
 
@@ -76,8 +77,7 @@ class _FilePageState extends State<FilePage> {
   }
 
   void addFileTile(String filePath) {
-    String fileName = filePath.split('\\').last;
-    print(fileName);
+    String fileName = path.basename(filePath);
     setState(() {
       fileTiles.insert(
         fileTiles.length,
@@ -98,7 +98,7 @@ class _FilePageState extends State<FilePage> {
   }
 
   void addOtherFileTile(String filePath) {
-    String fileName = filePath.split('\\').last;
+    String fileName = path.basename(filePath);
     setState(() {
       otherFileTiles.insert(
         otherFileTiles.length,
