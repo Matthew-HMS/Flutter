@@ -117,7 +117,22 @@ class _ChatMessageState extends State<ChatMessage> {
 
     return Align(
       alignment: widget.isSentByMe ? Alignment.centerRight : Alignment.centerLeft,
-      child: messageWidget,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          IconButton(
+            icon: Icon(Icons.delete, size: 30, color: Colors.white),
+            onPressed: () {
+              // Print the selected text when the volume_up button is clicked
+              print('delete message: ${widget.message}');
+            },
+          ),
+          Expanded(
+            child: messageWidget,
+          ),
+        ],
+      ),
     );
   }
 }
