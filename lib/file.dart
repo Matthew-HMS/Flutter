@@ -7,6 +7,8 @@ import 'course.dart';
 import 'ppt.dart';
 import 'api_file.dart' as apiFile;
 import 'api_ppt.dart' as apiPpt;
+import 'package:path/path.dart' as path;
+
 
 const Color backgroundColor = Color.fromARGB(255, 61, 61, 61);
 
@@ -48,7 +50,7 @@ class _FilePageState extends State<FilePage> {
       List<apiPpt.Ppt> Ppts = await apiPpt.ApiService.fetchModels(widget.class_id);
       setState(() {
         pptFileTiles = [
-          AddCourseTile(onAddCourse: pickPptFile),
+          pptFileTiles[0],
           ...Ppts.map((Ppt) {
             return FileTile(
               file_id: Ppt.ppt_id,
@@ -73,7 +75,7 @@ class _FilePageState extends State<FilePage> {
       List<apiFile.File> files = await apiFile.ApiService.fetchModels(widget.class_id);
       setState(() {
         otherFileTiles = [
-          AddCourseTile(onAddCourse: pickOtherFile),
+          otherFileTiles[0],
           ...files.map((file) {
             return FileTile(
               file_id: file.file_id,
@@ -121,6 +123,9 @@ class _FilePageState extends State<FilePage> {
     } catch (e) {
       print('Failed to create PptFile: $e');
     }
+    finally{
+      _fetchPptFiles();
+    }
   }
 
   void addOtherFileTile(String fileName, String filePath, int class_id, String courseName) async {
@@ -131,6 +136,9 @@ class _FilePageState extends State<FilePage> {
       }           
     } catch (e) {
       print('Failed to create OtherFile: $e');
+    }
+    finally{
+      _fetchOtherFiles();
     }
   }
 
@@ -143,6 +151,9 @@ class _FilePageState extends State<FilePage> {
     } catch (e) {
       print('Failed to delete PptFile: $e');
     }
+    finally{
+      _fetchPptFiles();
+    }
   }
 
   void deleteOtherFileTile(int file_id) async {
@@ -153,6 +164,9 @@ class _FilePageState extends State<FilePage> {
       }           
     } catch (e) {
       print('Failed to delete OtherFile: $e');
+    }
+    finally{
+      _fetchOtherFiles();
     }
   }
 

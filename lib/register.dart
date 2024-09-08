@@ -1,67 +1,45 @@
 import 'package:flutter/material.dart';
 
-const Color backgroundColor = Color.fromARGB(255, 61, 61, 61);
+const backgroundColor = Color.fromARGB(255, 61, 61, 61);
 
-class PersonalInfoPage extends StatefulWidget {
+class RegisterPage extends StatefulWidget {
   @override
-  _PersonalInfoPageState createState() => _PersonalInfoPageState();
+  _RegisterPageState createState() => _RegisterPageState();
 }
 
-class _PersonalInfoPageState extends State<PersonalInfoPage> {
+class _RegisterPageState extends State<RegisterPage> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _oldPasswordController = TextEditingController();
-  final TextEditingController _newPasswordController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
-  bool _isOldPasswordVisible = false;
-  bool _isNewPasswordVisible = false;
+  bool _isPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
 
-  _PersonalInfoPageState() {
-    _nameController.text = 'Me';
-    _emailController.text = 'test@gmail.com';
-  }
 
-  void _save () {
+  void _register() {
     final String name = _nameController.text;
     final String email = _emailController.text;
-    final String oldPassword = _oldPasswordController.text;
-    final String newPassword = _newPasswordController.text;
+    final String password = _passwordController.text;
     final String confirmPassword = _confirmPasswordController.text;
 
-    if (name.isNotEmpty && email.isNotEmpty && oldPassword.isNotEmpty && newPassword.isNotEmpty && confirmPassword.isNotEmpty) {
-      if (oldPassword != '12345678') {
+    if (name.isNotEmpty && email.isNotEmpty && password.isNotEmpty && confirmPassword.isNotEmpty) {
+      if (password == confirmPassword) {
+        print('Email: $email');
+        print('Password: $password');
+        Navigator.pushReplacementNamed(context, '/');
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('舊密碼錯誤')),
+          const SnackBar(content: Text('註冊成功! 請登入以使用系統')),
         );
-      }
-      
-      else if (newPassword != confirmPassword) {
+      } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('密碼不一致')),
         );
-      } 
-      else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('保存成功!')),
-        );
-        _oldPasswordController.text = '';
-        _newPasswordController.text = '';
-        _confirmPasswordController.text = '';
       }
-    } 
-    else {
+    } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('請輸入所有欄位')),
       );
     }
-  }
-
-  void _logout() {
-    Navigator.pushReplacementNamed(context, '/');
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('登出成功!')),
-    );
   }
 
   @override
@@ -75,14 +53,14 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               const Text(
-                '個人資訊',
+                '會員註冊',
                 style: TextStyle(
                   fontSize: 32,
                   color: Colors.white,
                   fontWeight: FontWeight.w600,
                 ),
               ),
-              const SizedBox(height: 30),
+              const SizedBox(height: 40),
               SizedBox(
                 width: 400,
                 child: TextField(
@@ -125,9 +103,9 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
               SizedBox(
                 width: 400,
                 child: TextField(
-                  controller: _oldPasswordController,
+                  controller: _passwordController,
                   decoration: InputDecoration(
-                    labelText: '舊密碼',
+                    labelText: '密碼',
                     labelStyle: const TextStyle(color: Colors.white),
                     border: const OutlineInputBorder(),
                     enabledBorder: const OutlineInputBorder(
@@ -138,49 +116,18 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
                     ),
                     suffixIcon: IconButton(
                       icon: Icon(
-                        _isOldPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                        _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
                         color: Colors.white,
                       ),
                       onPressed: () {
                         setState(() {
-                          _isOldPasswordVisible = !_isOldPasswordVisible;
+                          _isPasswordVisible = !_isPasswordVisible;
                         });
                       },
                     ),
                   ),
                   style: const TextStyle(color: Colors.white),
-                  obscureText: !_isOldPasswordVisible,
-                ),
-              ),
-              const SizedBox(height: 20),
-              SizedBox(
-                width: 400,
-                child: TextField(
-                  controller: _newPasswordController,
-                  decoration: InputDecoration(
-                    labelText: '新密碼',
-                    labelStyle: const TextStyle(color: Colors.white),
-                    border: const OutlineInputBorder(),
-                    enabledBorder: const OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.white),
-                    ),
-                    focusedBorder: const OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.white),
-                    ),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _isNewPasswordVisible ? Icons.visibility : Icons.visibility_off,
-                        color: Colors.white,
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          _isNewPasswordVisible = !_isNewPasswordVisible;
-                        });
-                      },
-                    ),
-                  ),
-                  style: const TextStyle(color: Colors.white),
-                  obscureText: !_isNewPasswordVisible,
+                  obscureText: !_isPasswordVisible,
                 ),
               ),
               const SizedBox(height: 20),
@@ -189,7 +136,7 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
                 child: TextField(
                   controller: _confirmPasswordController,
                   decoration: InputDecoration(
-                    labelText: '確認新密碼',
+                    labelText: '確認密碼',
                     labelStyle: const TextStyle(color: Colors.white),
                     border: const OutlineInputBorder(),
                     enabledBorder: const OutlineInputBorder(
@@ -216,7 +163,7 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
               ),
               const SizedBox(height: 20),
               TextButton(
-                onPressed: _save,
+                onPressed: _register,
                 style: TextButton.styleFrom(
                   foregroundColor: backgroundColor, 
                   backgroundColor: Colors.white,
@@ -226,25 +173,28 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
                   ),
                 ),
                 child: const Text(
-                  '保存',
+                  '註冊',
                   style: TextStyle(fontSize: 20.0),
                 ),
               ),
-              const SizedBox(height: 20.0),
-              TextButton(
-                onPressed: _logout,
-                style: TextButton.styleFrom(
-                  foregroundColor: backgroundColor, 
-                  backgroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 178.0, vertical: 16.0), 
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8.0), // Custom border radius
+              const SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text(
+                    '已經有帳號？',
+                    style: TextStyle(color: Colors.white),
                   ),
-                ),
-                child: const Text(
-                  '登出',
-                  style: TextStyle(fontSize: 20.0),
-                ),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pushReplacementNamed(context, '/');
+                    },
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.lightBlue,
+                    ),
+                    child: const Text('登入'),
+                  ),
+                ],
               ),
             ],
           ),

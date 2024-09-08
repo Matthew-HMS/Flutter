@@ -229,6 +229,9 @@ class _PromptManagementPageState extends State<PromptManagementPage> {
     } catch (e) {
       print('Failed to deleteItem: $e');
     }
+    finally{
+      _fetchPrompts();
+    }
   }
 
   Widget _buildItem(Prompt item, Animation<double>? animation, int index) {

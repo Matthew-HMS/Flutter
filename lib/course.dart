@@ -68,6 +68,9 @@ class CourseManagementPageState extends State<CourseManagementPage> {
     } catch (e) {
       print('Failed to create course: $e');
     }
+    finally{
+      _fetchCourses(); // 新增成功後重新載入課程
+    }
   }
 
   void deleteCourseTile(int class_id, String courseName) async {
@@ -89,14 +92,15 @@ class CourseManagementPageState extends State<CourseManagementPage> {
           } catch (e) {
             print('Failed to delete directory: $e');
           }
-      } else {
-        print('Directory does not exist: $directoryPath');
-      }
-
-        _fetchCourses(); // 刪除成功後重新載入課程
+        } else {
+          print('Directory does not exist: $directoryPath');
+        }    
       }
     } catch (e) {
       print('Failed to delete course: $e');
+    }
+    finally{
+      _fetchCourses(); // 刪除成功後重新載入課程
     }
   }
 
@@ -123,6 +127,10 @@ class CourseManagementPageState extends State<CourseManagementPage> {
       }
     } catch (e) {
       print('Failed to update course: $e');
+    }
+    finally{
+      // reload course tiles
+      _fetchCourses(); 
     }
   }
 

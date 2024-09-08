@@ -44,6 +44,7 @@ dependencies:
   cupertino_icons: ^1.0.6
   file_picker: ^8.0.0+1
   syncfusion_flutter_pdfviewer: ^26.1.41
+  path: ^1.8.0
 
 dev_dependencies:
   flutter_test:
@@ -71,10 +72,7 @@ flutter:
   assets:
     - assets/images/algo.png
     - assets/images/algo.png
-    - assets/sample.pptx
-    - assets/test.pdf
-    - assets/test2.pdf
-    - assets/chapter1.pdf
+
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware

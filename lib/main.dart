@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'prompt.dart';
-import 'file.dart';
 import 'personal.dart';
 import 'course.dart';
+import 'log_in.dart';
+import 'register.dart';
+
 
 void main() => runApp(MyApp());
 
@@ -10,18 +12,24 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+
+      initialRoute: '/',
+      routes: {
+        '/': (context) => LogInPage(),
+        '/navigation': (context) => const Navigation(),
+        '/register': (context) => RegisterPage(),
+      },
+
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         navigationBarTheme: NavigationBarThemeData(
           labelTextStyle: WidgetStateProperty.all(
-            TextStyle(color: Colors.white), // Set your desired text color here
+            const TextStyle(color: Colors.white), // Set your desired text color here
           ),
         ),
 
       ),
-      home: Scaffold(
-        body: Navigation()
-      ),
+
     );
   }
 }
@@ -40,7 +48,7 @@ class _NavigationState extends State<Navigation> {
 
 
   final List<Widget> pages = [
-    CourseManagementPage(),
+    const CourseManagementPage(),
     PromptManagementPage(),
     PersonalInfoPage(),
   ];
@@ -50,7 +58,7 @@ class _NavigationState extends State<Navigation> {
 
     return Scaffold(
       bottomNavigationBar: NavigationBar(
-        backgroundColor: Color.fromARGB(255, 48, 48, 48),
+        backgroundColor: const Color.fromARGB(255, 48, 48, 48),
         labelBehavior: labelBehavior,
         selectedIndex: currentPageIndex,
         onDestinationSelected: (int index) {
@@ -84,6 +92,3 @@ class _NavigationState extends State<Navigation> {
     );
   }
 }
-
-
-
