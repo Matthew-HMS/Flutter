@@ -100,11 +100,11 @@ class _ChatMessageState extends State<ChatMessage> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            Expanded(
+            Flexible(
               child: messageWidget,
             ),
             IconButton(
-              icon: Icon(Icons.volume_up_rounded, size: 30, color: Colors.white),
+              icon: Icon(Icons.volume_up_rounded, size: 20, color: Colors.white),
               onPressed: () {
                 // Print the selected text when the volume_up button is clicked
                 print('Selected text: $selectedText');
@@ -122,13 +122,13 @@ class _ChatMessageState extends State<ChatMessage> {
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           IconButton(
-            icon: Icon(Icons.delete, size: 30, color: Colors.white),
+            icon: Icon(Icons.delete, size: 20, color: Colors.white),
             onPressed: () {
               // Print the selected text when the volume_up button is clicked
               print('delete message: ${widget.message}');
             },
           ),
-          Expanded(
+          Flexible(
             child: messageWidget,
           ),
         ],
