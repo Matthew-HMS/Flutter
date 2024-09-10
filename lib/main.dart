@@ -5,21 +5,18 @@ import 'course.dart';
 import 'log_in.dart';
 import 'register.dart';
 
-
 void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-
       initialRoute: '/',
       routes: {
         '/': (context) => LogInPage(),
         '/navigation': (context) => const Navigation(),
         '/register': (context) => RegisterPage(),
       },
-
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         navigationBarTheme: NavigationBarThemeData(
@@ -27,9 +24,7 @@ class MyApp extends StatelessWidget {
             const TextStyle(color: Colors.white), // Set your desired text color here
           ),
         ),
-
       ),
-
     );
   }
 }
@@ -46,15 +41,15 @@ class _NavigationState extends State<Navigation> {
   NavigationDestinationLabelBehavior labelBehavior =
       NavigationDestinationLabelBehavior.alwaysShow;
 
-
-  final List<Widget> pages = [
-    const CourseManagementPage(),
-    PromptManagementPage(),
-    PersonalInfoPage(),
-  ];
-
   @override
   Widget build(BuildContext context) {
+    final String userId = ModalRoute.of(context)!.settings.arguments as String;
+
+    final List<Widget> pages = [
+      const CourseManagementPage(),
+      PromptManagementPage(),
+      PersonalInfoPage(userId: userId), // Pass user_id to PersonalInfoPage
+    ];
 
     return Scaffold(
       bottomNavigationBar: NavigationBar(
@@ -71,7 +66,6 @@ class _NavigationState extends State<Navigation> {
             selectedIcon: Icon(Icons.class_rounded),
             icon: Icon(Icons.class_outlined),
             label: '課程管理',
-            
           ),
           NavigationDestination(
             selectedIcon: Icon(Icons.design_services_rounded),
@@ -92,6 +86,3 @@ class _NavigationState extends State<Navigation> {
     );
   }
 }
-
-
-

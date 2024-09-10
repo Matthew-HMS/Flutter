@@ -11,6 +11,7 @@ class _LoginPageState extends State<LogInPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _isPasswordVisible = false;
+  String userId = '12345'; // Example user_id
 
   void _login() {
     final String email = _emailController.text;
@@ -20,7 +21,11 @@ class _LoginPageState extends State<LogInPage> {
       // 示例：打印用户输入的信息
       print('Email: $email');
       print('Password: $password');
-      Navigator.pushReplacementNamed(context, '/navigation');
+      Navigator.pushReplacementNamed(
+        context,
+        '/navigation',
+        arguments: userId, // Pass user_id as argument
+      );
     } else {
       // 提示用户输入信息
       ScaffoldMessenger.of(context).showSnackBar(

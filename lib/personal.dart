@@ -3,6 +3,10 @@ import 'package:flutter/material.dart';
 const Color backgroundColor = Color.fromARGB(255, 61, 61, 61);
 
 class PersonalInfoPage extends StatefulWidget {
+  final String userId;
+
+  const PersonalInfoPage({Key? key, required this.userId}) : super(key: key);
+
   @override
   _PersonalInfoPageState createState() => _PersonalInfoPageState();
 }
@@ -17,8 +21,10 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
   bool _isNewPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
 
-  _PersonalInfoPageState() {
-    _nameController.text = 'Me';
+  @override
+  void initState() {
+    super.initState();
+    _nameController.text = widget.userId;
     _emailController.text = 'test@gmail.com';
   }
 
