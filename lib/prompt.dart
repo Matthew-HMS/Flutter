@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 const Color backgroundColor = Color.fromARGB(255, 61, 61, 61);
+const double textSize = 20.0; // Define the desired text size
 
 class PromptManagementPage extends StatefulWidget {
   @override
@@ -66,7 +67,7 @@ class _PromptManagementPageState extends State<PromptManagementPage> {
                     controller: _searchController,
                     decoration: InputDecoration(
                       hintText: '按enter搜尋...',
-                      hintStyle: TextStyle(color: Colors.white54),
+                      hintStyle: TextStyle(color: Colors.white54, fontSize: textSize),
                       contentPadding: EdgeInsets.only(left: 20.0),
                       suffixIcon: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -93,7 +94,7 @@ class _PromptManagementPageState extends State<PromptManagementPage> {
                         borderSide: BorderSide(color: Colors.white),
                       ),
                     ),
-                    style: TextStyle(color: Colors.white),
+                    style: TextStyle(color: Colors.white, fontSize: textSize),
                     onSubmitted: (value) => _filterItems(value), // Handle 'Enter' key press
                   ),
                 ),
@@ -110,7 +111,7 @@ class _PromptManagementPageState extends State<PromptManagementPage> {
                     backgroundColor: Colors.white, // Background color
                     foregroundColor: backgroundColor, // Text color
                   ),
-                  child: Text('新增Prompt'),
+                  child: Text('新增Prompt', style: TextStyle(fontSize: textSize)),
                 ),
               ],
             ),
@@ -120,7 +121,7 @@ class _PromptManagementPageState extends State<PromptManagementPage> {
                   ? Center(
                       child: Text(
                         '無符合項目',
-                        style: TextStyle(color: Colors.white),
+                        style: TextStyle(color: Colors.white, fontSize: textSize),
                       ),
                     )
                   : AnimatedList(
@@ -147,17 +148,19 @@ class _PromptManagementPageState extends State<PromptManagementPage> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('新增Prompt'),
+          title: Text('新增Prompt', style: TextStyle(fontSize: textSize)),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
                 controller: titleController,
-                decoration: InputDecoration(labelText: '標題'),
+                decoration: InputDecoration(labelText: '標題', labelStyle: TextStyle(fontSize: textSize)),
+                style: TextStyle(fontSize: textSize),
               ),
               TextField(
                 controller: descriptionController,
-                decoration: InputDecoration(labelText: 'Prompt描述'),
+                decoration: InputDecoration(labelText: 'Prompt描述', labelStyle: TextStyle(fontSize: textSize)),
+                style: TextStyle(fontSize: textSize),
               ),
             ],
           ),
@@ -166,7 +169,7 @@ class _PromptManagementPageState extends State<PromptManagementPage> {
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text('取消'),
+              child: Text('取消', style: TextStyle(fontSize: textSize)),
             ),
             TextButton(
               onPressed: () {
@@ -185,7 +188,7 @@ class _PromptManagementPageState extends State<PromptManagementPage> {
                 });
                 Navigator.of(context).pop();
               },
-              child: Text('新增'),
+              child: Text('新增', style: TextStyle(fontSize: textSize)),
             ),
           ],
         );
@@ -197,11 +200,11 @@ class _PromptManagementPageState extends State<PromptManagementPage> {
     Widget listItem = ListTile(
       title: Text(
         item['title'],
-        style: TextStyle(color: Colors.white, fontSize: 18.0),
+        style: TextStyle(color: Colors.white, fontSize: textSize),
       ),
       subtitle: Text(
         item['description'],
-        style: TextStyle(color: Colors.white70, fontSize: 14.0),
+        style: TextStyle(color: Colors.white70, fontSize: textSize - 4),
       ),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
@@ -268,17 +271,19 @@ class _PromptManagementPageState extends State<PromptManagementPage> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('編輯Prompt'),
+          title: Text('編輯Prompt', style: TextStyle(fontSize: textSize)),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
                 controller: titleController,
-                decoration: InputDecoration(labelText: '標題'),
+                decoration: InputDecoration(labelText: '標題', labelStyle: TextStyle(fontSize: textSize)),
+                style: TextStyle(fontSize: textSize),
               ),
               TextField(
                 controller: descriptionController,
-                decoration: InputDecoration(labelText: 'Prompt描述'),
+                decoration: InputDecoration(labelText: 'Prompt描述', labelStyle: TextStyle(fontSize: textSize)),
+                style: TextStyle(fontSize: textSize),
               ),
             ],
           ),
@@ -287,7 +292,7 @@ class _PromptManagementPageState extends State<PromptManagementPage> {
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text('取消'),
+              child: Text('取消', style: TextStyle(fontSize: textSize)),
             ),
             TextButton(
               onPressed: () {
@@ -303,7 +308,7 @@ class _PromptManagementPageState extends State<PromptManagementPage> {
                 });
                 Navigator.of(context).pop();
               },
-              child: Text('儲存'),
+              child: Text('儲存', style: TextStyle(fontSize: textSize)),
             ),
           ],
         );

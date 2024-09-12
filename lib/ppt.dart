@@ -3,10 +3,21 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'chat.dart';
 
 const Color backgroundColor = Color.fromARGB(255, 61, 61, 61);
 const Color primaryColor = Color.fromARGB(255, 48, 48, 48);
+const double textSize = 20.0;
+
+List<Widget> messages = [
+  ChatMessage(
+    message: "您好，需要什麼幫助呢？",
+    isSentByMe: false,
+  ),
+  ChatMessage(
+    message: "測試RWD測試RWD測試RWD測試RWD測試RWD測試RWD測試RWD測試RWD測試RWD測試RWD測試RWD測試RWD",
+    isSentByMe: false,
+  ),
+];
 
 class PptPage extends StatefulWidget {
   final String filePath;
@@ -20,10 +31,9 @@ class _PptPageState extends State<PptPage> {
   final PdfViewerController _pdfViewerController = PdfViewerController();
   final ValueNotifier<int> _currentPageNumber = ValueNotifier<int>(1);
   final ValueNotifier<int> _totalPageNumber = ValueNotifier<int>(0);
-  final ScrollController _scrollController = ScrollController(); // Add this line
+  final ScrollController _scrollController = ScrollController();
 
   void _scrollToBottom() {
-    // This function will be passed to ChatSidebar
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_scrollController.hasClients) {
         _scrollController.animateTo(
@@ -49,7 +59,7 @@ class _PptPageState extends State<PptPage> {
               pdfViewerController: _pdfViewerController,
               currentPageNumber: _currentPageNumber,
               totalPageNumber: _totalPageNumber,
-              scrollToBottomCallback: _scrollToBottom, // Pass the callback
+              scrollToBottomCallback: _scrollToBottom,
             ),
           ),
           Expanded(
@@ -76,7 +86,7 @@ class SlideView extends StatefulWidget {
   final PdfViewerController pdfViewerController;
   final ValueNotifier<int> currentPageNumber;
   final ValueNotifier<int> totalPageNumber;
-  final VoidCallback scrollToBottomCallback; // Step 2: Add callback
+  final VoidCallback scrollToBottomCallback;
 
   const SlideView({
     Key? key,
@@ -85,7 +95,7 @@ class SlideView extends StatefulWidget {
     required this.pdfViewerController,
     required this.currentPageNumber,
     required this.totalPageNumber,
-    required this.scrollToBottomCallback, // Step 2: Add callback
+    required this.scrollToBottomCallback,
   }) : super(key: key);
 
   @override
@@ -193,8 +203,8 @@ class _SlideViewState extends State<SlideView> {
                             return Container(
                               color: Colors.transparent,
                               child: ListTile(
-                                title: Text(_filteredItems[index]['title']!, style: TextStyle(color: Colors.white)),
-                                subtitle: Text(_filteredItems[index]['description']!, style: TextStyle(color: Colors.white70)),
+                                title: Text(_filteredItems[index]['title']!, style: TextStyle(color: Colors.white, fontSize: textSize)),
+                                subtitle: Text(_filteredItems[index]['description']!, style: TextStyle(color: Colors.white70, fontSize: textSize)),
                                 onTap: () {
                                   setState(() {
                                     final text = _controller.text;
@@ -237,9 +247,8 @@ class _SlideViewState extends State<SlideView> {
         _isSent = true;
       });
       widget.updateMessagesCallback();
-      widget.scrollToBottomCallback(); // Step 3: Call the callback
+      widget.scrollToBottomCallback();
 
-      // Reset the icon after a delay
       Future.delayed(Duration(seconds: 2), () {
         setState(() {
           _isSent = false;
@@ -301,7 +310,7 @@ class _SlideViewState extends State<SlideView> {
                     builder: (context, totalPage, child) {
                       return Text(
                         '$currentPage / $totalPage',
-                        style: TextStyle(fontSize: 22, color: Colors.white),
+                        style: TextStyle(fontSize: textSize, color: Colors.white),
                       );
                     },
                   );
@@ -326,7 +335,7 @@ class _SlideViewState extends State<SlideView> {
                   controller: _controller,
                   decoration: InputDecoration(
                     hintText: "Type '/' to search prompts",
-                    hintStyle: TextStyle(color: Colors.white),
+                    hintStyle: TextStyle(color: Colors.white, fontSize: textSize),
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
                     prefixIcon: Padding(
                       padding: EdgeInsets.only(left: 8.0),
@@ -351,7 +360,7 @@ class _SlideViewState extends State<SlideView> {
                       ),
                     ),
                   ),
-                  style: TextStyle(color: Colors.white),
+                  style: TextStyle(color: Colors.white, fontSize: textSize),
                   onSubmitted: (value) {
                     _sendMessage();
                   },
@@ -361,6 +370,127 @@ class _SlideViewState extends State<SlideView> {
           ),
         ),
       ],
+    );
+  }
+}
+
+class ChatSidebar extends StatefulWidget {
+  final VoidCallback scrollToBottomCallback;
+  final ScrollController scrollController;
+
+  ChatSidebar({required this.scrollToBottomCallback, required this.scrollController});
+
+  @override
+  _ChatSidebarState createState() => _ChatSidebarState();
+}
+
+class _ChatSidebarState extends State<ChatSidebar> {
+  @override
+  void dispose() {
+    widget.scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: Color.fromARGB(255, 48, 48, 48),
+      child: Scrollbar(
+        thickness: 6.0,
+        radius: Radius.circular(10),
+        controller: widget.scrollController,
+        child: Column(
+          children: <Widget>[
+            Expanded(
+              child: ListView.builder(
+                controller: widget.scrollController,
+                padding: EdgeInsets.all(10),
+                itemCount: messages.length,
+                itemBuilder: (context, index) => messages[index],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class ChatMessage extends StatefulWidget {
+  final String message;
+  final bool isSentByMe;
+
+  ChatMessage({required this.message, required this.isSentByMe});
+
+  @override
+  _ChatMessageState createState() => _ChatMessageState();
+}
+
+class _ChatMessageState extends State<ChatMessage> {
+  String selectedText = "";
+
+  void _handleSelectionChange(TextSelection selection, SelectionChangedCause? cause) {
+    if (cause == SelectionChangedCause.longPress || cause == SelectionChangedCause.drag) {
+      setState(() {
+        selectedText = widget.message.substring(selection.start, selection.end);
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    Widget messageWidget = Container(
+      margin: EdgeInsets.symmetric(vertical: 10),
+      padding: EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: widget.isSentByMe ? backgroundColor : Color.fromARGB(255, 80, 80, 80),
+        borderRadius: BorderRadius.circular(15),
+      ),
+      child: SelectableText(
+        widget.message,
+        style: TextStyle(fontSize: textSize, color: Colors.white),
+        onSelectionChanged: _handleSelectionChange,
+      ),
+    );
+
+    if (!widget.isSentByMe) {
+      return Align(
+        alignment: Alignment.centerLeft,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Flexible(
+              child: messageWidget,
+            ),
+            IconButton(
+              icon: Icon(Icons.volume_up_rounded, size: 20, color: Colors.white),
+              onPressed: () {
+                print('Selected text: $selectedText');
+              },
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Align(
+      alignment: widget.isSentByMe ? Alignment.centerRight : Alignment.centerLeft,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          IconButton(
+            icon: Icon(Icons.delete, size: 20, color: Colors.white),
+            onPressed: () {
+              print('delete message: ${widget.message}');
+            },
+          ),
+          Flexible(
+            child: messageWidget,
+          ),
+        ],
+      ),
     );
   }
 }

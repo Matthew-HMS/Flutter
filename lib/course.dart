@@ -218,7 +218,7 @@ class _CourseTileState extends State<CourseTile> {
                   Flexible(
                     child: Text(
                       _title,
-                      style: TextStyle(color: Colors.white),
+                      style: TextStyle(color: Colors.white, fontSize: textSize),
                       overflow: TextOverflow.ellipsis,
                       maxLines: 1,
                     ),
@@ -242,7 +242,7 @@ class _CourseTileState extends State<CourseTile> {
                           value: value,
                           child: Text(
                             value,
-                            style: TextStyle(color: Colors.white),
+                            style: TextStyle(color: Colors.white, fontSize: 20),
                           ),
                         );
                       }).toList();
