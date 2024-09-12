@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'api_user.dart';
+import 'dart:convert';
 
 const backgroundColor = Color.fromARGB(255, 61, 61, 61);
 
@@ -12,21 +14,39 @@ class _LoginPageState extends State<LogInPage> {
   final TextEditingController _passwordController = TextEditingController();
   bool _isPasswordVisible = false;
 
-  void _login() {
+  void _login() async {
     final String email = _emailController.text;
     final String password = _passwordController.text;
-    // 在这里处理登录逻辑
-    if (email.isNotEmpty && password.isNotEmpty) {
-      // 示例：打印用户输入的信息
-      print('Email: $email');
-      print('Password: $password');
-      Navigator.pushReplacementNamed(context, '/navigation');
-    } else {
-      // 提示用户输入信息
+    try {
+      if (email.isNotEmpty && password.isNotEmpty) {      
+        print('Email: $email');
+        print('Password: $password');
+        final response = await ApiService.user_login(email,password);
+
+        if (response.statusCode == 200) {                  
+          final Map<String, dynamic> responseData = jsonDecode(response.body);
+          final int userId = responseData['user_id'];
+          // final String accessToken = responseData['access'];
+          Navigator.pushReplacementNamed(
+            context,
+            '/navigation',
+            arguments: userId, // Pass user_id as argument
+          );
+        }
+        
+      } else {
+        // 提示用户输入信息
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('請輸入所有欄位')),
+        );
+      }
+    }
+    catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('請輸入所有欄位')),
+        SnackBar(content: Text('error : worng account or password ')),
       );
     }
+    
   }
 
   @override

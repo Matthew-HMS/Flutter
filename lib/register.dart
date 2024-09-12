@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'api_user.dart';
+import 'dart:convert';
 
 const backgroundColor = Color.fromARGB(255, 61, 61, 61);
 
@@ -16,7 +18,7 @@ class _RegisterPageState extends State<RegisterPage> {
   bool _isConfirmPasswordVisible = false;
 
 
-  void _register() {
+  void _register() async {
     final String name = _nameController.text;
     final String email = _emailController.text;
     final String password = _passwordController.text;
@@ -26,10 +28,28 @@ class _RegisterPageState extends State<RegisterPage> {
       if (password == confirmPassword) {
         print('Email: $email');
         print('Password: $password');
-        Navigator.pushReplacementNamed(context, '/');
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('註冊成功! 請登入以使用系統')),
-        );
+
+        try {
+          final response = await ApiService.user_register(email, password, name);
+
+          if (response.statusCode == 201) {                  
+            Navigator.pushReplacementNamed(context, '/');
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('註冊成功! 請登入以使用系統')),
+            );
+          }
+          else if (response.statusCode == 400) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('帳號重複，請重新輸入')),
+            );
+          }
+        } catch (e) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('error : $e')),
+          );
+        }
+          
+        
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('密碼不一致')),

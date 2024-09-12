@@ -4,6 +4,9 @@ const Color backgroundColor = Color.fromARGB(255, 61, 61, 61);
 
 class PersonalInfoPage extends StatefulWidget {
   @override
+  final int userId;
+  const PersonalInfoPage({Key? key, required this.userId}) : super(key: key);
+
   _PersonalInfoPageState createState() => _PersonalInfoPageState();
 }
 
@@ -17,8 +20,10 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
   bool _isNewPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
 
-  _PersonalInfoPageState() {
-    _nameController.text = 'Me';
+  @override
+  void initState() {
+    super.initState();
+    _nameController.text = widget.userId.toString();
     _emailController.text = 'test@gmail.com';
   }
 
