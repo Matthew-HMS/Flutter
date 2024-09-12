@@ -39,8 +39,8 @@ class _FilePageState extends State<FilePage> {
   @override
   void initState() {
     super.initState();
-    pptFileTiles.add(AddCourseTile(onAddCourse: pickPptFile, text: '新增簡報'));
-    otherFileTiles.add(AddCourseTile(onAddCourse: pickOtherFile, text: '新增補充教材'));
+    pptFileTiles.add(AddCourseTile(onAddCourse: pickPptFile));
+    otherFileTiles.add(AddCourseTile(onAddCourse: pickOtherFile));
     _fetchPptFiles();
     _fetchOtherFiles();
   }

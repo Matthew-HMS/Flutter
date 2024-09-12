@@ -3,7 +3,7 @@ import 'file.dart';
 import 'api_course.dart';
 import 'dart:io';
 
-const Color backgroundColor = Color.fromARGB(255, 61, 61, 61);
+const Color backgroundColor = Color.fromARGB(255, 249, 247, 247);
 
 class CourseManagementPage extends StatefulWidget {
   const CourseManagementPage({super.key});
@@ -106,7 +106,7 @@ class CourseManagementPageState extends State<CourseManagementPage> {
 
   void updateCourseTileTitle(int class_id, String newCourseName, String courseName) async {
     print('Class ID: $class_id, New Title: $newCourseName');
-    Course course = Course(class_id: class_id, name: newCourseName, user_id: 1);
+    Course course = Course(class_id: class_id, name: newCourseName, user_id: 1);//預設為 1
     try {
       final response = await ApiService.editCourse(course);
       if (response.statusCode == 200) { 
@@ -262,7 +262,7 @@ class _CourseTileState extends State<CourseTile> {
         );
       },
       child: Card(
-        color: Color.fromARGB(255, 48, 48, 48),
+        color: Color.fromARGB(255, 219, 226, 239),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -273,7 +273,7 @@ class _CourseTileState extends State<CourseTile> {
               Icon(
                 Icons.book_outlined,
                 size: 100,
-                color: Colors.white,
+                color: Color.fromARGB(255, 63, 114, 175),
               ),
             Spacer(), // Pushes the title and button to the bottom
             Padding(
@@ -285,7 +285,7 @@ class _CourseTileState extends State<CourseTile> {
                   Flexible(
                     child: Text(
                       _title,
-                      style: TextStyle(color: Colors.white),
+                      style: TextStyle(color: Color.fromARGB(255, 63, 114, 175)),
                       overflow: TextOverflow.ellipsis,
                       maxLines: 1,
                     ),
@@ -362,29 +362,25 @@ class _CourseTileState extends State<CourseTile> {
 
 class AddCourseTile extends StatelessWidget {
   final VoidCallback onAddCourse;
-  final String text;
 
-  const AddCourseTile({required this.onAddCourse, this.text = '新增課程'});
+  const AddCourseTile({required this.onAddCourse});
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onAddCourse,
       child: Card(
-        color: Color.fromARGB(255, 48, 48, 48),
+        color: Color.fromARGB(255, 219, 226, 239),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
               Icons.add,
               size: 100,
-              color: Colors.white, // Change 'Colors.red' to your desired color
+              color: Color.fromARGB(255, 63, 114, 175), // Change 'Colors.red' to your desired color
             ),
             SizedBox(height: 8),
-            Text(
-              text,
-              style: TextStyle(color: Colors.white), // Change 'Colors.red' to your desired color
-            ),
+            
           ],
         ),
       ),
