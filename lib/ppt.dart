@@ -136,6 +136,9 @@ class _SlideViewState extends State<SlideView> {
         messages.add(ChatMessage(
           message: item['pptword_question'],
           isSentByMe: true,
+          pptword_id: item['pptword_id'],
+          pptword_page: item['pptword_page'],
+          ppt_id: item['ppt_ppt'],
         ));
         messages.add(ChatMessage(
           message: item['pptword_content'],
@@ -305,12 +308,7 @@ class _SlideViewState extends State<SlideView> {
         widget.updateMessagesCallback();
         widget.scrollToBottomCallback(); // Step 3: Call the callback
 
-        // // Reset the icon after a delay
-        // Future.delayed(Duration(seconds: 2), () {
-        //   setState(() {
-        //     _isSent = false;
-        //   });
-        // });
+        // fetchChat(widget.currentPageNumber.value, widget.pptId);
       });
 
       try {
@@ -331,6 +329,9 @@ class _SlideViewState extends State<SlideView> {
         setState(() {
           _isSent = false; // 出錯後也要重置動畫
         });
+      }
+      finally {
+        fetchChat(widget.currentPageNumber.value, widget.pptId);
       }
     }
   }

@@ -40,5 +40,26 @@ class ApiService {
       throw Exception('Failed to receive GPT response');
     }
   }
+
+  static Future<http.Response> deleteChat(int pptword_id) async {
+    print("delete pptword ...");
+    final response = await http.delete(
+      Uri.parse(baseUrl + "gpt/"),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(<String, String>{
+        'pptword_id': pptword_id.toString(),        
+      }),
+    );
+
+    if (response.statusCode == 204) {
+      // print(response.body);
+      return response;
+    } else {
+      throw Exception('Failed to delete file');
+    }
+  }
+
 }
 

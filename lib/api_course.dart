@@ -26,7 +26,7 @@ class ApiService {
       },
       body: jsonEncode(<String, String>{
         'class_name': name,
-        'user_user': '1',//預設為 1
+        'user_user': '1', //預設為 1
       }),
     );
 
@@ -93,7 +93,7 @@ class Course {
     return Course(
       class_id: json['class_id'] as int,
       name: json['class_name'] as String,
-      user_id: 1,
+      user_id: 1, //預設為 1
     );
   }
 }
