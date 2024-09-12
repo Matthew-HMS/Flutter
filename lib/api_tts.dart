@@ -52,6 +52,25 @@ class GptTTS {
   static AudioPlayer? _audioPlayer; // 用來存儲 AudioPlayer 實例
   static Function? onAudioCompleteCallback; // 用來存儲回調函數
 
+  static Future<void> playAudio(String url, {Function? onComplete}) async {
+    _audioPlayer = AudioPlayer();
+
+    // 直接播放音頻，不需要檢查返回值
+    await _audioPlayer!.play(UrlSource(url)); // 使用 UrlSource(url) 指定播放來源
+
+    // 監聽播放完成事件
+    _audioPlayer!.onPlayerComplete.listen((event) {
+      print("finish playing audio");
+
+      // 如果傳入了 onComplete 回調，則調用它
+      if (onComplete != null) {
+        onComplete();
+      }
+
+      // 釋放音頻資源
+      _audioPlayer = null;
+    });
+  }
   
 
   // Function to convert text to speech and play it
@@ -88,6 +107,9 @@ class GptTTS {
         if (onAudioCompleteCallback != null) {
           onAudioCompleteCallback!(); // 調用回調函數
         }
+        // setState(() {
+        //   isPlayingAudio = false;
+        // });
       });
 
       } else {
