@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
-const Color backgroundColor = Color.fromARGB(255, 61, 61, 61);
+bool _isDarkMode = false;
+Color get backgroundColor => _isDarkMode ? Colors.white : Color.fromARGB(255, 61, 61, 61);
 
 class PersonalInfoPage extends StatefulWidget {
   final String userId;
@@ -20,7 +21,6 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
   bool _isOldPasswordVisible = false;
   bool _isNewPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
-  bool _isDarkMode = false;
 
   @override
   void initState() {
@@ -76,7 +76,7 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: _isDarkMode ? Colors.white : backgroundColor,
+      backgroundColor: backgroundColor,
       body: Stack(
         children: [
           Padding(
