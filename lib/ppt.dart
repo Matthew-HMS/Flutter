@@ -34,6 +34,8 @@ class _PptPageState extends State<PptPage> {
   final ValueNotifier<int> _totalPageNumber = ValueNotifier<int>(0);
   final ScrollController _scrollController = ScrollController();
   bool _isFullScreen = false;
+  bool _isChatSidebarOpen = true;
+  bool _isChatSidebarFullScreen = false; 
 
   void _scrollToBottom() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -50,6 +52,18 @@ class _PptPageState extends State<PptPage> {
   void _toggleFullScreen() {
     setState(() {
       _isFullScreen = !_isFullScreen;
+    });
+  }
+
+  void _toggleChatSidebar() {
+    setState(() {
+      _isChatSidebarOpen = !_isChatSidebarOpen;
+    });
+  }
+
+  void _toggleChatSidebarFullScreen() {
+    setState(() {
+      _isChatSidebarFullScreen = !_isChatSidebarFullScreen;
     });
   }
 
@@ -71,17 +85,21 @@ class _PptPageState extends State<PptPage> {
               scrollController: _scrollController,
               toggleFullScreenCallback: _toggleFullScreen, // Pass the callback
               isFullScreen: _isFullScreen, // Pass the fullscreen state
+              isChatSidebarOpen: _isChatSidebarOpen, // Pass the chat sidebar state
+              toggleChatSidebarCallback: _toggleChatSidebar,
             ),
           ),
-          !_isFullScreen
-            ? Expanded(
-                flex: 1,
-                child: ChatSidebar(
-                  scrollToBottomCallback: _scrollToBottom,
-                  scrollController: _scrollController,
-                ),
-              )
-            : const SizedBox.shrink()
+          if (_isChatSidebarOpen && !_isFullScreen)
+          Expanded(
+            flex: _isChatSidebarFullScreen ? 3 : 1,
+            child: ChatSidebar(
+              scrollToBottomCallback: _scrollToBottom,
+              scrollController: _scrollController,
+              toggleChatSidebarFullScreenCallback: _toggleChatSidebarFullScreen,
+              closeChatSidebarCallback: _toggleChatSidebar,
+              isFullScreen: _isChatSidebarFullScreen,
+            ),
+          ),
         ],
       ),
     );
@@ -101,8 +119,10 @@ class SlideView extends StatefulWidget {
   final ValueNotifier<int> totalPageNumber;
   final VoidCallback scrollToBottomCallback;
   final ScrollController scrollController;
+  final VoidCallback toggleChatSidebarCallback;
   final VoidCallback toggleFullScreenCallback; // Add this line
   final bool isFullScreen; // Add this line
+  final bool isChatSidebarOpen;
 
   const SlideView({
     Key? key,
@@ -113,8 +133,10 @@ class SlideView extends StatefulWidget {
     required this.totalPageNumber,
     required this.scrollToBottomCallback,
     required this.scrollController,
-    required this.toggleFullScreenCallback, // Add this line
     required this.isFullScreen, // Add this line
+    required this.isChatSidebarOpen, // Add this linee
+    required this.toggleFullScreenCallback, // Add this line
+    required this.toggleChatSidebarCallback,
   }) : super(key: key);
 
   @override
@@ -300,15 +322,32 @@ class _SlideViewState extends State<SlideView> {
   Widget build(BuildContext context) {
     return Column(
       children: <Widget>[
-        if (!widget.isFullScreen)
-          Container(
-            padding: EdgeInsets.all(10),
-            alignment: Alignment.centerLeft,
-            child: IconButton(
-              icon: Icon(Icons.arrow_back, color: Colors.white, size: 30),
-              onPressed: () => Navigator.of(context).pop(),
+        Row(
+          children: [
+            if (!widget.isFullScreen)
+            Expanded(
+              child: Container(
+                padding: EdgeInsets.all(10),
+                alignment: Alignment.centerLeft,
+                child: IconButton(
+                  icon: Icon(Icons.arrow_back, color: Colors.white, size: 30),
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
+              ),
             ),
-          ),
+            if (!widget.isFullScreen && !widget.isChatSidebarOpen)
+            Expanded(
+              child: Container(
+                padding: EdgeInsets.all(10),
+                alignment: Alignment.centerRight,
+                child: IconButton(
+                  icon: Icon(Icons.chat, color: Colors.white, size: 30),
+                  onPressed: widget.toggleChatSidebarCallback,
+                ),
+              ),
+            ),
+          ],
+        ),
         Expanded(
           child: Row(
             children: [
@@ -428,43 +467,99 @@ class _SlideViewState extends State<SlideView> {
     );
   }
 }
+
+
 class ChatSidebar extends StatefulWidget {
   final VoidCallback scrollToBottomCallback;
   final ScrollController scrollController;
+  final VoidCallback toggleChatSidebarFullScreenCallback; // Add this line
+  final VoidCallback closeChatSidebarCallback; // Add this line
+  final bool isFullScreen; // Add this line
 
-  ChatSidebar({required this.scrollToBottomCallback, required this.scrollController});
+  ChatSidebar({
+    required this.scrollToBottomCallback,
+    required this.scrollController,
+    required this.toggleChatSidebarFullScreenCallback, // Add this line
+    required this.closeChatSidebarCallback, // Add this line
+    required this.isFullScreen, // Add this line
+  });
 
   @override
   _ChatSidebarState createState() => _ChatSidebarState();
 }
 
 class _ChatSidebarState extends State<ChatSidebar> {
-  // @override
-  // void dispose() {
-  //   widget.scrollController.dispose();
-  //   super.dispose();
-  // }
-
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Color.fromARGB(255, 48, 48, 48),
-      child: Scrollbar(
-        thickness: 6.0,
-        radius: Radius.circular(10),
-        controller: widget.scrollController,
-        child: Column(
-          children: <Widget>[
-            Expanded(
-              child: ListView.builder(
-                controller: widget.scrollController,
-                padding: EdgeInsets.all(10),
-                itemCount: messages.length,
-                itemBuilder: (context, index) => messages[index],
+      color: backgroundColor,
+      child: Column(
+        children: [
+          Expanded(
+            child: Scrollbar(
+              thickness: 6.0,
+              radius: Radius.circular(10),
+              controller: widget.scrollController,
+              child: Padding(
+                padding: const EdgeInsets.all(30.0),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: primaryColor,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Column(
+                    children: <Widget>[
+                      Padding(
+                        padding: const EdgeInsets.all(10.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            IconButton(
+                              icon: Icon(widget.isFullScreen ? Icons.fullscreen_exit : Icons.fullscreen, color: Colors.white),
+                              onPressed: widget.toggleChatSidebarFullScreenCallback,
+                            ),
+                            Expanded(
+                              child: Center(
+                                child: Text(
+                                  'Assistant',
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            IconButton(
+                              icon: Icon(Icons.add_comment_outlined, color: Colors.white, size: 20),
+                              onPressed: (){},
+                            ),
+                            IconButton(
+                              icon: Icon(Icons.close, color: Colors.white),
+                              onPressed: widget.closeChatSidebarCallback,
+                            ),
+                          ],
+                        ),
+                      ),
+                      Divider(
+                        color: Colors.grey,
+                        thickness: 1,
+                      ),
+                      Expanded(
+                        child: ListView.builder(
+                          controller: widget.scrollController,
+                          padding: EdgeInsets.all(10),
+                          itemCount: messages.length,
+                          itemBuilder: (context, index) => messages[index],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -497,7 +592,7 @@ class _ChatMessageState extends State<ChatMessage> {
       margin: EdgeInsets.symmetric(vertical: 10),
       padding: EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: widget.isSentByMe ? backgroundColor : Color.fromARGB(255, 80, 80, 80),
+        color: widget.isSentByMe ? Color.fromARGB(255, 120, 120, 120): Color.fromARGB(255, 80, 80, 80),
         borderRadius: BorderRadius.circular(15),
       ),
       child: SelectableText(
