@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 // import 'chat.dart';
@@ -30,6 +31,7 @@ class _PptPageState extends State<PptPage> {
   final ValueNotifier<int> _currentPageNumber = ValueNotifier<int>(1);
   final ValueNotifier<int> _totalPageNumber = ValueNotifier<int>(0);
   final ScrollController _scrollController = ScrollController(); 
+  bool _isFullScreen = false;
 
   void _scrollToBottom() {
     // print("call _scrollToBottom");
@@ -43,6 +45,12 @@ class _PptPageState extends State<PptPage> {
         );
       }
     });    
+  }
+
+  void _toggleFullScreen() {
+    setState(() {
+      _isFullScreen = !_isFullScreen;
+    });
   }
 
   @override
@@ -61,15 +69,20 @@ class _PptPageState extends State<PptPage> {
               currentPageNumber: _currentPageNumber,
               totalPageNumber: _totalPageNumber,
               scrollToBottomCallback: _scrollToBottom, 
-            ),
-          ),
-          Expanded(
-            flex: 1,
-            child: ChatSidebar(
-              scrollToBottomCallback: _scrollToBottom,
               scrollController: _scrollController,
+              toggleFullScreenCallback: _toggleFullScreen, // Pass the callback
+              isFullScreen: _isFullScreen, // Pass the fullscreen state
             ),
           ),
+          !_isFullScreen
+            ? Expanded(
+                flex: 1,
+                child: ChatSidebar(
+                  scrollToBottomCallback: _scrollToBottom,
+                  scrollController: _scrollController,
+                ),
+              )
+            : const SizedBox.shrink()
         ],
       ),
     );
@@ -90,6 +103,9 @@ class SlideView extends StatefulWidget {
   final ValueNotifier<int> currentPageNumber;
   final ValueNotifier<int> totalPageNumber;
   final VoidCallback scrollToBottomCallback; 
+  final ScrollController scrollController;
+  final VoidCallback toggleFullScreenCallback; // Add this line
+  final bool isFullScreen; // Add this line
 
   const SlideView({
     Key? key,
@@ -100,6 +116,9 @@ class SlideView extends StatefulWidget {
     required this.currentPageNumber,
     required this.totalPageNumber,
     required this.scrollToBottomCallback, 
+    required this.scrollController,
+    required this.toggleFullScreenCallback, // Add this line
+    required this.isFullScreen, // Add this line
   }) : super(key: key);
 
   @override
@@ -119,8 +138,20 @@ class _SlideViewState extends State<SlideView> {
   void initState() {
     super.initState();
     _controller.addListener(_onTextChanged);
+    // Add a listener for the 'Esc' key
+    HardwareKeyboard.instance.addHandler(_handleKeyEvent);
     fetchPrompts(); // 加載 API 數據
     fetchChat(widget.currentPageNumber.value, widget.pptId);
+  }
+
+  bool _handleKeyEvent(KeyEvent event) {
+    if (event is KeyDownEvent && event.logicalKey == LogicalKeyboardKey.escape) {
+      if (widget.isFullScreen) {
+        widget.toggleFullScreenCallback();
+        return true; // Indicate that the event was handled
+      }
+    }
+    return false; // Indicate that the event was not handled
   }
 
   Future<void> fetchChat(int page, int ppt_id) async {
@@ -351,122 +382,160 @@ class _SlideViewState extends State<SlideView> {
   Widget build(BuildContext context) {
     return Column(
       children: <Widget>[
-        Container(
-          padding: EdgeInsets.all(10),
-          alignment: Alignment.centerLeft,
-          child: IconButton(
-            icon: Icon(Icons.arrow_back, color: Colors.white, size: 30),
-            onPressed: () => Navigator.of(context).pop(),
-          ),
-        ),
-        Expanded(
-          child: Container(
-            color: backgroundColor,
-            child: SfPdfViewer.file(
-              File(widget.filePath),
-              controller: widget.pdfViewerController,
-              pageLayoutMode: PdfPageLayoutMode.single,
-              onPageChanged: (PdfPageChangedDetails details) {
-                // detect page change
-                if (details.newPageNumber > _previousPageNumber) {
-                  // print("next page by wheel");
-                  fetchChat(details.newPageNumber, widget.pptId);
-                } else if (details.newPageNumber < _previousPageNumber) {
-                  // print("last page by wheel");
-                  fetchChat(details.newPageNumber, widget.pptId);
-                }
-                _previousPageNumber = details.newPageNumber;
-                widget.currentPageNumber.value = details.newPageNumber;
-              },
-              onDocumentLoaded: (PdfDocumentLoadedDetails details) {
-                widget.totalPageNumber.value = details.document.pages.count;
-              },
+        // 如果不是全螢幕，顯示返回按鈕
+        if (!widget.isFullScreen)
+          Container(
+            padding: EdgeInsets.all(10),
+            alignment: Alignment.centerLeft,
+            child: IconButton(
+              icon: Icon(Icons.arrow_back, color: Colors.blue, size: 30),
+              onPressed: () => Navigator.of(context).pop(),
             ),
           ),
-        ),
-        Padding(
-          padding: const EdgeInsets.all(8.0),
+
+        // PDF Viewer 與頁面切換按鈕
+        Expanded(
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: <Widget>[
+            children: [
               IconButton(
-                icon: Icon(Icons.arrow_back, color: Colors.white),
+                icon: Icon(Icons.arrow_back, color: Colors.green),
                 onPressed: () {
-                  // fetchChat(widget.currentPageNumber.value - 1, widget.pptId);
-                  widget.pdfViewerController.previousPage();                  
+                  widget.pdfViewerController.previousPage();
                 },
               ),
-              ValueListenableBuilder<int>(
-                valueListenable: widget.currentPageNumber,
-                builder: (context, currentPage, child) {
-                  return ValueListenableBuilder<int>(
-                    valueListenable: widget.totalPageNumber,
-                    builder: (context, totalPage, child) {
-                      return Text(
-                        '$currentPage / $totalPage',
-                        style: TextStyle(fontSize: textSize, color: Colors.white),
-                      );
+              Expanded(
+                child: Container(
+                  color: backgroundColor,
+                  child: SfPdfViewer.file(
+                    File(widget.filePath),
+                    controller: widget.pdfViewerController,
+                    pageLayoutMode: PdfPageLayoutMode.single,
+                    onPageChanged: (PdfPageChangedDetails details) {
+                      // 更新頁碼
+                      if (details.newPageNumber > _previousPageNumber) {
+                        fetchChat(details.newPageNumber, widget.pptId);
+                      } else if (details.newPageNumber < _previousPageNumber) {
+                        fetchChat(details.newPageNumber, widget.pptId);
+                      }
+                      _previousPageNumber = details.newPageNumber;
+                      widget.currentPageNumber.value = details.newPageNumber;
                     },
-                  );
-                },
+                    onDocumentLoaded: (PdfDocumentLoadedDetails details) {
+                      widget.totalPageNumber.value = details.document.pages.count;
+                    },
+                  ),
+                ),
               ),
               IconButton(
                 icon: Icon(Icons.arrow_forward, color: Colors.white),
                 onPressed: () {
-                  // fetchChat(widget.currentPageNumber.value + 1, widget.pptId);
-                  widget.pdfViewerController.nextPage();                  
+                  widget.pdfViewerController.nextPage();
                 },
               ),
             ],
           ),
         ),
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Row(
-            children: <Widget>[
-              Expanded(
-                child: TextField(
-                  key: _textFieldKey,
-                  controller: _controller,
-                  decoration: InputDecoration(
-                    hintText: "Type '/' to search prompts",
-                    hintStyle: TextStyle(color: Colors.white, fontSize: textSize),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
-                    prefixIcon: Padding(
-                      padding: EdgeInsets.only(left: 8.0),
-                      child: IconButton(
-                        icon: Icon(FontAwesomeIcons.lightbulb, size: 25.0, color: Colors.white),
-                        onPressed: _lightbulbPressed,
+
+        // 如果不是全螢幕，顯示頁碼與全螢幕按鈕
+        if (!widget.isFullScreen)
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: <Widget>[
+                IconButton(
+                  icon: Icon(Icons.arrow_back, color: Colors.red),
+                  onPressed: () {
+                    widget.pdfViewerController.previousPage();
+                  },
+                ),
+                ValueListenableBuilder<int>(
+                  valueListenable: widget.currentPageNumber,
+                  builder: (context, currentPage, child) {
+                    return ValueListenableBuilder<int>(
+                      valueListenable: widget.totalPageNumber,
+                      builder: (context, totalPage, child) {
+                        return Row(
+                          children: [
+                            Text(
+                              '$currentPage / $totalPage',
+                              style: TextStyle(fontSize: textSize, color: Colors.white),
+                            ),
+                            IconButton(
+                              icon: Icon(Icons.fullscreen, color: Colors.white),
+                              onPressed: () {
+                                widget.toggleFullScreenCallback();
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Esc鍵可退出全螢幕')),
+                                );
+                              },
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  },
+                ),
+                IconButton(
+                  icon: Icon(Icons.arrow_forward, color: Colors.white),
+                  onPressed: () {
+                    widget.pdfViewerController.nextPage();
+                  },
+                ),
+              ],
+            ),
+          ),
+
+        // 如果不是全螢幕，顯示文字輸入框與發送按鈕
+        if (!widget.isFullScreen)
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              children: <Widget>[
+                Expanded(
+                  child: TextField(
+                    key: _textFieldKey,
+                    controller: _controller,
+                    decoration: InputDecoration(
+                      hintText: "Type '/' to search prompts",
+                      hintStyle: TextStyle(color: Colors.white, fontSize: textSize),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
+                      prefixIcon: Padding(
+                        padding: EdgeInsets.only(left: 8.0),
+                        child: IconButton(
+                          icon: Icon(FontAwesomeIcons.lightbulb, size: 25.0, color: Colors.white),
+                          onPressed: _lightbulbPressed,
+                        ),
                       ),
-                    ),
-                    suffixIcon: Padding(  // send message button
-                      padding: EdgeInsets.only(right: 8.0),
-                      child: GestureDetector(
-                        onTap: _sendMessage,
-                        child: AnimatedSwitcher(
-                          duration: Duration(milliseconds: 300),
-                          transitionBuilder: (Widget child, Animation<double> animation) {
-                            return ScaleTransition(child: child, scale: animation);
-                          },
-                          child: _isSent
-                              ? Icon(Icons.check_circle, key: ValueKey<int>(1), size: 20.0, color: Colors.white)
-                              : Icon(FontAwesomeIcons.paperPlane, key: ValueKey<int>(0), size: 20.0, color: Colors.white),
+                      suffixIcon: Padding(
+                        padding: EdgeInsets.only(right: 8.0),
+                        child: GestureDetector(
+                          onTap: _sendMessage,
+                          child: AnimatedSwitcher(
+                            duration: Duration(milliseconds: 300),
+                            transitionBuilder: (Widget child, Animation<double> animation) {
+                              return ScaleTransition(child: child, scale: animation);
+                            },
+                            child: _isSent
+                                ? Icon(Icons.check_circle, key: ValueKey<int>(1), size: 20.0, color: Colors.white)
+                                : Icon(FontAwesomeIcons.paperPlane, key: ValueKey<int>(0), size: 20.0, color: Colors.white),
+                          ),
                         ),
                       ),
                     ),
+                    style: TextStyle(color: Colors.white, fontSize: textSize),
+                    onSubmitted: (value) {
+                      _sendMessage();
+                    },
                   ),
-                  style: TextStyle(color: Colors.white, fontSize: textSize),
-                  onSubmitted: (value) {
-                    _sendMessage();
-                  },
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
       ],
     );
   }
+
 }
 
 class ChatSidebar extends StatefulWidget {
@@ -491,14 +560,14 @@ class _ChatSidebarState extends State<ChatSidebar> {
   // }
   //
 
-  @override
-  void dispose() {    
-    //0902
-    // _scrollController.dispose(); // Dispose of the ScrollController
-    widget.scrollController.dispose();
-    //
-    super.dispose();
-  }
+  // @override
+  // void dispose() {    
+  //   //0902
+  //   // _scrollController.dispose(); // Dispose of the ScrollController
+  //   widget.scrollController.dispose();
+  //   //
+  //   super.dispose();
+  // }
 
   @override
   Widget build(BuildContext context) {
