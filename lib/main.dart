@@ -26,7 +26,7 @@ class MyApp extends StatelessWidget {
             const TextStyle(
               fontSize: 16, // 設定字體大小
               fontWeight: FontWeight.bold, // 設定字體粗細
-              color: Color.fromARGB(255, 63, 114, 175)
+              color: Color.fromARGB(255, 17, 45, 78)
               ), // Set your desired text color here
           ),
         ),

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-const Color backgroundColor = Color.fromARGB(255, 61, 61, 61);
+const Color backgroundColor = Color.fromARGB(255, 249, 247, 247);
 
 class PersonalInfoPage extends StatefulWidget {
   @override
@@ -83,7 +83,7 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
                 '個人資訊',
                 style: TextStyle(
                   fontSize: 32,
-                  color: Colors.white,
+                  color: Color.fromARGB(255, 63, 114, 175),
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -94,16 +94,16 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
                   controller: _nameController,
                   decoration: const InputDecoration(
                     labelText: '姓名',
-                    labelStyle: TextStyle(color: Colors.white),
+                    labelStyle: TextStyle(color: Color.fromARGB(255, 63, 114, 175)),
                     border: OutlineInputBorder(),
                     enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.white),
+                      borderSide: BorderSide(color: Color.fromARGB(255, 17, 45, 78)),
                     ),
                     focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.white),
+                      borderSide: BorderSide(color: Color.fromARGB(255, 17, 45, 78)),
                     ),
                   ),
-                  style: const TextStyle(color: Colors.white),
+                  style: const TextStyle(color: Color.fromARGB(255, 63, 114, 175)),
                 ),
               ),
               const SizedBox(height: 20),
@@ -113,16 +113,16 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
                   controller: _emailController,
                   decoration: const InputDecoration(
                     labelText: '電子郵件',
-                    labelStyle: TextStyle(color: Colors.white),
+                    labelStyle: TextStyle(color: Color.fromARGB(255, 63, 114, 175)),
                     border: OutlineInputBorder(),
                     enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.white),
+                      borderSide: BorderSide(color: Color.fromARGB(255, 17, 45, 78)),
                     ),
                     focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.white),
+                      borderSide: BorderSide(color: Color.fromARGB(255, 17, 45, 78)),
                     ),
                   ),
-                  style: const TextStyle(color: Colors.white),
+                  style: const TextStyle(color: Color.fromARGB(255, 63, 114, 175)),
                   keyboardType: TextInputType.emailAddress,
                 ),
               ),
@@ -133,18 +133,18 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
                   controller: _oldPasswordController,
                   decoration: InputDecoration(
                     labelText: '舊密碼',
-                    labelStyle: const TextStyle(color: Colors.white),
+                    labelStyle: const TextStyle(color: Color.fromARGB(255, 63, 114, 175)),
                     border: const OutlineInputBorder(),
                     enabledBorder: const OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.white),
+                      borderSide: BorderSide(color: Color.fromARGB(255, 17, 45, 78)),
                     ),
                     focusedBorder: const OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.white),
+                      borderSide: BorderSide(color: Color.fromARGB(255, 17, 45, 78)),
                     ),
                     suffixIcon: IconButton(
                       icon: Icon(
                         _isOldPasswordVisible ? Icons.visibility : Icons.visibility_off,
-                        color: Colors.white,
+                        color: Color.fromARGB(255, 17, 45, 78),
                       ),
                       onPressed: () {
                         setState(() {
@@ -153,7 +153,7 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
                       },
                     ),
                   ),
-                  style: const TextStyle(color: Colors.white),
+                  style: const TextStyle(color: Color.fromARGB(255, 63, 114, 175)),
                   obscureText: !_isOldPasswordVisible,
                 ),
               ),
@@ -164,18 +164,18 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
                   controller: _newPasswordController,
                   decoration: InputDecoration(
                     labelText: '新密碼',
-                    labelStyle: const TextStyle(color: Colors.white),
+                    labelStyle: const TextStyle(color: Color.fromARGB(255, 63, 114, 175)),
                     border: const OutlineInputBorder(),
                     enabledBorder: const OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.white),
+                      borderSide: BorderSide(color: Color.fromARGB(255, 17, 45, 78)),
                     ),
                     focusedBorder: const OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.white),
+                      borderSide: BorderSide(color: Color.fromARGB(255, 17, 45, 78)),
                     ),
                     suffixIcon: IconButton(
                       icon: Icon(
                         _isNewPasswordVisible ? Icons.visibility : Icons.visibility_off,
-                        color: Colors.white,
+                        color: Color.fromARGB(255, 17, 45, 78),
                       ),
                       onPressed: () {
                         setState(() {
@@ -184,7 +184,7 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
                       },
                     ),
                   ),
-                  style: const TextStyle(color: Colors.white),
+                  style: const TextStyle(color: Color.fromARGB(255, 63, 114, 175)),
                   obscureText: !_isNewPasswordVisible,
                 ),
               ),
@@ -195,18 +195,18 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
                   controller: _confirmPasswordController,
                   decoration: InputDecoration(
                     labelText: '確認新密碼',
-                    labelStyle: const TextStyle(color: Colors.white),
+                    labelStyle: const TextStyle(color: Color.fromARGB(255, 63, 114, 175)),
                     border: const OutlineInputBorder(),
                     enabledBorder: const OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.white),
+                      borderSide: BorderSide(color: Color.fromARGB(255, 17, 45, 78)),
                     ),
                     focusedBorder: const OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.white),
+                      borderSide: BorderSide(color: Color.fromARGB(255, 17, 45, 78)),
                     ),
                     suffixIcon: IconButton(
                       icon: Icon(
                         _isConfirmPasswordVisible ? Icons.visibility : Icons.visibility_off,
-                        color: Colors.white,
+                        color: Color.fromARGB(255, 17, 45, 78),
                       ),
                       onPressed: () {
                         setState(() {
@@ -215,7 +215,7 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
                       },
                     ),
                   ),
-                  style: const TextStyle(color: Colors.white),
+                  style: const TextStyle(color: Color.fromARGB(255, 63, 114, 175)),
                   obscureText: !_isConfirmPasswordVisible,
                 ),
               ),
@@ -223,8 +223,8 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
               TextButton(
                 onPressed: _save,
                 style: TextButton.styleFrom(
-                  foregroundColor: backgroundColor, 
-                  backgroundColor: Colors.white,
+                  foregroundColor: Colors.white, 
+                  backgroundColor: Color.fromARGB(255, 63, 114, 175),
                   padding: const EdgeInsets.symmetric(horizontal: 178.0, vertical: 16.0), 
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8.0), // Custom border radius
@@ -239,8 +239,8 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
               TextButton(
                 onPressed: _logout,
                 style: TextButton.styleFrom(
-                  foregroundColor: backgroundColor, 
-                  backgroundColor: Colors.white,
+                  foregroundColor: Colors.white, 
+                  backgroundColor: Color.fromARGB(255, 63, 114, 175),
                   padding: const EdgeInsets.symmetric(horizontal: 178.0, vertical: 16.0), 
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8.0), // Custom border radius

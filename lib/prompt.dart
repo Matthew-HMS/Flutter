@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'api_prompt.dart';
 
-const Color backgroundColor = Color.fromARGB(255, 61, 61, 61);
+const Color backgroundColor = Color.fromARGB(255, 249, 247, 247);
 
 class PromptManagementPage extends StatefulWidget {
   @override
@@ -81,17 +81,20 @@ class _PromptManagementPageState extends State<PromptManagementPage> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('編輯Prompt'),
+          title: Text('編輯Prompt',style: TextStyle(color: Color.fromARGB(255, 17, 45, 78)),),
+          backgroundColor: backgroundColor,
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
                 controller: titleController,
-                decoration: InputDecoration(labelText: '標題'),
+                decoration: InputDecoration(labelText: '標題', labelStyle: TextStyle(color: Color.fromARGB(255, 17, 45, 78)),),
+                style: TextStyle(color: Color.fromARGB(255, 63, 114, 175)),
               ),
               TextField(
                 controller: descriptionController,
-                decoration: InputDecoration(labelText: 'Prompt描述'),
+                decoration: InputDecoration(labelText: 'Prompt描述', labelStyle: TextStyle(color: Color.fromARGB(255, 17, 45, 78)),),
+                style: TextStyle(color: Color.fromARGB(255, 63, 114, 175)),
               ),
             ],
           ),
@@ -100,7 +103,7 @@ class _PromptManagementPageState extends State<PromptManagementPage> {
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text('取消'),
+              child: Text('取消', style: TextStyle(color: Color.fromARGB(255, 17, 45, 78)),),
             ),
             TextButton(
               onPressed: () async {
@@ -138,7 +141,7 @@ class _PromptManagementPageState extends State<PromptManagementPage> {
                   print('Failed to editItem: $e');
                 }
               },
-              child: Text('儲存'),
+              child: Text('儲存', style: TextStyle(color: Color.fromARGB(255, 17, 45, 78)),),
             ),
           ],
         );
@@ -238,11 +241,11 @@ class _PromptManagementPageState extends State<PromptManagementPage> {
     Widget listItem = ListTile(
       title: Text(
         item.name,
-        style: TextStyle(color: Colors.white, fontSize: 18.0),
+        style: TextStyle(color: Color.fromARGB(255, 17, 45, 78), fontSize: 18.0),
       ),
       subtitle: Text(
         item.content,
-        style: TextStyle(color: Colors.white70, fontSize: 14.0),
+        style: TextStyle(color: Color.fromARGB(255, 63, 114, 175), fontSize: 14.0),
       ),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
@@ -250,16 +253,16 @@ class _PromptManagementPageState extends State<PromptManagementPage> {
           IconButton(
             icon: Icon(
               item.isStarred ? Icons.star : Icons.star_border,
-              color: Colors.white54,
+              color: Color.fromARGB(255, 63, 114, 175),
             ),
             onPressed: () => _starItem(index),
           ),
           IconButton(
-            icon: Icon(Icons.edit, color: Colors.white54),
+            icon: Icon(Icons.edit, color: Color.fromARGB(255, 63, 114, 175)),
             onPressed: () => _editItem(index),
           ),
           IconButton(
-            icon: Icon(Icons.delete, color: Colors.white54),
+            icon: Icon(Icons.delete, color: Color.fromARGB(255, 63, 114, 175)),
             onPressed: () => _deleteItem(index),
           ),
         ],
@@ -297,18 +300,18 @@ class _PromptManagementPageState extends State<PromptManagementPage> {
                     controller: _searchController,
                     decoration: InputDecoration(
                       hintText: '搜尋',
-                      hintStyle: TextStyle(color: Colors.white54),
-                      prefixIcon: Icon(Icons.search, color: Colors.white54),
+                      hintStyle: TextStyle(color: Color.fromARGB(255, 63, 114, 175)),
+                      prefixIcon: Icon(Icons.search, color: Color.fromARGB(255, 63, 114, 175)),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(30.0),
-                        borderSide: BorderSide(color: Colors.white54),
+                        borderSide: BorderSide(color: Color.fromARGB(255, 17, 45, 78)),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(30.0),
-                        borderSide: BorderSide(color: Colors.white),
+                        borderSide: BorderSide(color: Color.fromARGB(255, 17, 45, 78)),
                       ),
                     ),
-                    style: TextStyle(color: Colors.white),
+                    style: TextStyle(color: Color.fromARGB(255, 63, 114, 175)),
                   ),
                 ),
                 SizedBox(width: 10),
@@ -318,7 +321,7 @@ class _PromptManagementPageState extends State<PromptManagementPage> {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30.0),
                     ),
-                    backgroundColor: Colors.white, // Background color
+                    backgroundColor: Color.fromARGB(255, 63, 114, 175), // Background color
                     foregroundColor: backgroundColor, // Text color
                   ),
                   child: Text('新增Prompt'),
@@ -331,7 +334,7 @@ class _PromptManagementPageState extends State<PromptManagementPage> {
                   ? Center(
                       child: Text(
                         '無符合項目',
-                        style: TextStyle(color: Colors.white),
+                        style: TextStyle(color: Color.fromARGB(255, 63, 114, 175)),
                       ),
                     )
                   // animate lead to error

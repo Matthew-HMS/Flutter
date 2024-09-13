@@ -161,20 +161,27 @@ class CourseManagementPageState extends State<CourseManagementPage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('請輸入課程名稱'),
+          backgroundColor: backgroundColor,
+          title: Text('請輸入課程名稱' ,style: TextStyle(color: Color.fromARGB(255, 17, 45, 78))),
           content: TextField(
             controller: _courseNameController,
-            decoration: InputDecoration(hintText: 'Course Name'),
+            decoration: InputDecoration(
+              hintText: 'Course Name', 
+              hintStyle: TextStyle(color: Colors.grey)
+            ),
+            style: TextStyle(color: Color.fromARGB(255, 63, 114, 175))
+
+
           ),
           actions: <Widget>[
             TextButton(
-              child: Text('取消'),
+              child: Text('取消', style: TextStyle(color: Color.fromARGB(255, 17, 45, 78))),
               onPressed: () {
                 Navigator.of(context).pop();
               },
             ),
             TextButton(
-              child: Text('加入'),
+              child: Text('加入', style: TextStyle(color: Color.fromARGB(255, 17, 45, 78)),),
               onPressed: () {
                 addCourseTile(_courseNameController.text);
                 Navigator.of(context).pop();
@@ -314,7 +321,7 @@ class _CourseTileState extends State<CourseTile> {
                         );
                       }).toList();
                     },
-                    color: Color.fromARGB(255, 61, 61, 61),
+                    color: Color.fromARGB(255, 63, 114, 175),
                   ),
                 ],
               ),
@@ -331,20 +338,25 @@ class _CourseTileState extends State<CourseTile> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('編輯名稱'),
+          backgroundColor: backgroundColor,
+          title: Text('編輯名稱',style: TextStyle(color: Color.fromARGB(255, 17, 45, 78))),
           content: TextField(
             controller: _controller,
-            decoration: InputDecoration(hintText: 'New title'),
+            decoration: InputDecoration(
+              hintText: 'New title',
+              hintStyle: TextStyle(color: Colors.grey)
+              ),
+              style: TextStyle(color: Color.fromARGB(255, 63, 114, 175))
           ),
           actions: <Widget>[
             TextButton(
-              child: Text('取消'),
+              child: Text('取消', style: TextStyle(color: Color.fromARGB(255, 17, 45, 78))),
               onPressed: () {
                 Navigator.of(context).pop();
               },
             ),
             TextButton(
-              child: Text('保存'),
+              child: Text('保存', style: TextStyle(color: Color.fromARGB(255, 17, 45, 78))),
               onPressed: () {
                 setState(() {
                   String newTitle = _controller.text;
