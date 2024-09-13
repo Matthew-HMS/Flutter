@@ -3,6 +3,7 @@ import 'package:flutter_markdown/flutter_markdown.dart';
 import 'ppt.dart' as ppt_manage_page;
 import 'api_tts.dart' as apiTTS;
 import 'api_gpt.dart' as apiGPT;
+import 'personal.dart';
 
 const Color backgroundColor = Color.fromARGB(255, 61, 61, 61);
 const Color primaryColor = Color.fromARGB(255, 48, 48, 48);

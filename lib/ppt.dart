@@ -3,12 +3,17 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'chat.dart';
+// import 'chat.dart';
 import 'api_prompt.dart' as ApiPrompt;
-import 'api_gpt.dart' as ApiGpt;
+import 'api_gpt.dart' as ApiGPT;
+import 'api_tts.dart' as ApiTTS;
+import 'api_gpt.dart' as ApiGPT;
 
 const Color backgroundColor = Color.fromARGB(255, 61, 61, 61);
 const Color primaryColor = Color.fromARGB(255, 48, 48, 48);
+const double textSize = 20.0;
+Map<int, List<Widget>> messagesByPage = {};
+List<Widget> messages = [];
 
 class PptPage extends StatefulWidget {
   final String filePath;
@@ -24,11 +29,10 @@ class _PptPageState extends State<PptPage> {
   final PdfViewerController _pdfViewerController = PdfViewerController();
   final ValueNotifier<int> _currentPageNumber = ValueNotifier<int>(1);
   final ValueNotifier<int> _totalPageNumber = ValueNotifier<int>(0);
-  final ScrollController _scrollController = ScrollController(); // Add this line
+  final ScrollController _scrollController = ScrollController(); 
 
   void _scrollToBottom() {
     // print("call _scrollToBottom");
-    // This function will be passed to ChatSidebar
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_scrollController.hasClients) {
         // print(_scrollController.position.maxScrollExtent);
@@ -56,7 +60,7 @@ class _PptPageState extends State<PptPage> {
               pdfViewerController: _pdfViewerController,
               currentPageNumber: _currentPageNumber,
               totalPageNumber: _totalPageNumber,
-              scrollToBottomCallback: _scrollToBottom, // Pass the callback
+              scrollToBottomCallback: _scrollToBottom, 
             ),
           ),
           Expanded(
@@ -85,7 +89,7 @@ class SlideView extends StatefulWidget {
   final PdfViewerController pdfViewerController;
   final ValueNotifier<int> currentPageNumber;
   final ValueNotifier<int> totalPageNumber;
-  final VoidCallback scrollToBottomCallback; // Step 2: Add callback
+  final VoidCallback scrollToBottomCallback; 
 
   const SlideView({
     Key? key,
@@ -95,7 +99,7 @@ class SlideView extends StatefulWidget {
     required this.pdfViewerController,
     required this.currentPageNumber,
     required this.totalPageNumber,
-    required this.scrollToBottomCallback, // Step 2: Add callback
+    required this.scrollToBottomCallback, 
   }) : super(key: key);
 
   @override
@@ -123,7 +127,7 @@ class _SlideViewState extends State<SlideView> {
     // print("call fetch chat");
     try {
       messages.clear();
-      List<Map<String, dynamic>> jsonResponse = await ApiGpt.ApiService.fetchModels(page, ppt_id);
+      List<Map<String, dynamic>> jsonResponse = await ApiGPT.ApiService.fetchModels(page, ppt_id);
       
       if (jsonResponse.isEmpty) {      
         messages.add(ChatMessage(
@@ -259,8 +263,8 @@ class _SlideViewState extends State<SlideView> {
                             return Container(
                               color: Colors.transparent,
                               child: ListTile(
-                                title: Text(_filteredItems[index]['title']!, style: TextStyle(color: Colors.white)),
-                                subtitle: Text(_filteredItems[index]['description']!, style: TextStyle(color: Colors.white70)),
+                                title: Text(_filteredItems[index]['title']!, style: TextStyle(color: Colors.white, fontSize: textSize)),
+                                subtitle: Text(_filteredItems[index]['description']!, style: TextStyle(color: Colors.white70, fontSize: textSize)),
                                 onTap: () {
                                   setState(() {
                                     final text = _controller.text;
@@ -306,14 +310,14 @@ class _SlideViewState extends State<SlideView> {
         _removeOverlay();     // 清除彈出層
         // 更新消息回調
         widget.updateMessagesCallback();
-        widget.scrollToBottomCallback(); // Step 3: Call the callback
+        widget.scrollToBottomCallback();
 
         // fetchChat(widget.currentPageNumber.value, widget.pptId);
       });
 
       try {
         // 使用 await 等待 sendMessage 完成，並獲取返回值
-        String returnText = await ApiGpt.ApiService.sendMessage(text, widget.currentPageNumber.value, widget.pptId);
+        String returnText = await ApiGPT.ApiService.sendMessage(text, widget.currentPageNumber.value, widget.pptId);
         
         setState(() {
           // 將返回的訊息加入 messages
@@ -400,7 +404,7 @@ class _SlideViewState extends State<SlideView> {
                     builder: (context, totalPage, child) {
                       return Text(
                         '$currentPage / $totalPage',
-                        style: TextStyle(fontSize: 22, color: Colors.white),
+                        style: TextStyle(fontSize: textSize, color: Colors.white),
                       );
                     },
                   );
@@ -426,7 +430,7 @@ class _SlideViewState extends State<SlideView> {
                   controller: _controller,
                   decoration: InputDecoration(
                     hintText: "Type '/' to search prompts",
-                    hintStyle: TextStyle(color: Colors.white),
+                    hintStyle: TextStyle(color: Colors.white, fontSize: textSize),
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
                     prefixIcon: Padding(
                       padding: EdgeInsets.only(left: 8.0),
@@ -451,7 +455,7 @@ class _SlideViewState extends State<SlideView> {
                       ),
                     ),
                   ),
-                  style: TextStyle(color: Colors.white),
+                  style: TextStyle(color: Colors.white, fontSize: textSize),
                   onSubmitted: (value) {
                     _sendMessage();
                   },
@@ -461,6 +465,222 @@ class _SlideViewState extends State<SlideView> {
           ),
         ),
       ],
+    );
+  }
+}
+
+class ChatSidebar extends StatefulWidget {
+
+  // 0902
+  final VoidCallback scrollToBottomCallback; // Step 1: Add callback
+  final ScrollController scrollController;
+  ChatSidebar({required this.scrollToBottomCallback, required this.scrollController});
+  //
+
+  _ChatSidebarState createState() => _ChatSidebarState();
+}
+
+class _ChatSidebarState extends State<ChatSidebar> {
+  // 0902
+  // final ScrollController _scrollController = ScrollController(); // Step 1: Declare ScrollController
+
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   // Initialize your ScrollController here if needed
+  // }
+  //
+
+  @override
+  void dispose() {    
+    //0902
+    // _scrollController.dispose(); // Dispose of the ScrollController
+    widget.scrollController.dispose();
+    //
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: Color.fromARGB(255, 48, 48, 48),
+      child: Scrollbar(
+        thickness: 6.0,
+        radius: Radius.circular(10),
+        //0902
+        // controller: _scrollController, // Connect the Scrollbar to the ScrollController
+        controller: widget.scrollController, // Connect the Scrollbar to the ScrollController
+        child: Column(
+          children: <Widget>[
+            Expanded(
+              child: ListView.builder(
+                controller: widget.scrollController, // Step 4: Assign the ScrollController to ListView.builder
+                padding: EdgeInsets.all(10),
+                itemCount: messages.isEmpty ? 1 : messages.length,
+                itemBuilder: (context, index) {
+                  if (messages.isEmpty) {
+                    return Center(child: Text("No messages yet."));
+                  }
+                  return messages[index];
+                }
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class ChatMessage extends StatefulWidget {
+  final String message;
+  final bool isSentByMe;
+  int? pptword_id;
+  int? pptword_page;
+  int? ppt_id;
+
+  ChatMessage({required this.message, required this.isSentByMe, this.pptword_id, this.pptword_page, this.ppt_id});
+
+  @override
+  _ChatMessageState createState() => _ChatMessageState();
+}
+
+class _ChatMessageState extends State<ChatMessage> {
+  String selectedText = "";
+  bool isPlayingAudio = false;
+
+  void initState() {
+    super.initState();
+    ApiTTS.GptTTS.setAudioCompleteCallback(() {
+      setState(() {
+        isPlayingAudio = false; // 更新狀態為停止
+      });
+    });
+  }
+
+  // void deleteChatMessage(int pptword_id, int pptword_page, int ppt_id) async {
+  //   try {
+  //     final response = await ApiGPT.ApiService.deleteChat(pptword_id);
+  //     if (response.statusCode == 204) {
+  //       fetchChat(pptword_page,ppt_id);
+  //     }           
+  //   } catch (e) {
+  //     print('Failed to delete PptFile: $e');
+  //   }
+  //   finally{
+  //     fetchChat();
+  //   }
+  // }
+
+  void _playAudio() {
+    setState(() {
+      isPlayingAudio = true;
+    });
+
+    ApiTTS.GptTTS.playAudio('audio_url', onComplete: () {
+      // 當音頻播放完成時，更新 UI 狀態
+      setState(() {
+        isPlayingAudio = false;
+      });
+    });
+  }
+
+  void _handleSelectionChange(TextSelection selection, SelectionChangedCause? cause) {
+    if (cause == SelectionChangedCause.longPress || cause == SelectionChangedCause.drag) {
+      setState(() {
+        selectedText = widget.message.substring(selection.start, selection.end);
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    Widget messageWidget = Container(
+      margin: EdgeInsets.symmetric(vertical: 10),
+      padding: EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: widget.isSentByMe ? backgroundColor : Color.fromARGB(255, 80, 80, 80),
+        borderRadius: BorderRadius.circular(15),
+      ),
+      child: SelectableText(
+        widget.message,
+        style: TextStyle(fontSize: 16, color: Colors.white),
+        onSelectionChanged: _handleSelectionChange,
+      ),
+      // child: MarkdownBody(
+      //   data: widget.message,
+      //   styleSheet: MarkdownStyleSheet(
+      //     p: TextStyle(fontSize: 16, color: Colors.white),
+      //   ),
+      // ),
+    );
+
+    if (!widget.isSentByMe) {
+      return Align(
+        alignment: Alignment.centerLeft,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Flexible(
+              child: messageWidget,
+            ),
+            IconButton(
+              icon: Icon(
+                // ApiTTS.GptTTS.isPlayingAudio() ? Icons.stop : Icons.volume_up_rounded, // 更新圖標根據播放狀態
+                isPlayingAudio ? Icons.stop : Icons.volume_up_rounded,
+                size: 20,
+                color: Colors.white,
+              ),
+              onPressed: () async {
+                if (isPlayingAudio) {
+                  // stop playing audio 
+                  await ApiTTS.GptTTS.stopAudio();
+                  selectedText = "";
+                  setState(() {
+                    isPlayingAudio = false; 
+                  });
+                } else {
+                  setState(() {
+                    isPlayingAudio = true;
+                  });
+
+                  if (selectedText.isNotEmpty) {
+                    await ApiTTS.GptTTS.streamedAudio(selectedText);
+                    print("start playing selected audio");
+                  } else {
+                    await ApiTTS.GptTTS.streamedAudio(widget.message);
+                    print("start playing all audio");
+                  }
+                  selectedText = "";
+                }
+              },
+            ),
+          ],
+        ),
+      );
+    }
+
+    
+    return Align(
+      alignment: widget.isSentByMe ? Alignment.centerRight : Alignment.centerLeft,
+      child: messageWidget,
+      // child: Row(
+      //   mainAxisSize: MainAxisSize.min,
+      //   crossAxisAlignment: CrossAxisAlignment.end,
+      //   children: [
+      //     IconButton(
+      //       icon: Icon(Icons.delete, size: 20, color: Colors.white),
+      //       onPressed: () {
+      //         // Print the selected text when the volume_up button is clicked
+      //         print('delete message: ${widget.pptword_id}, page: ${widget.pptword_page}, ppt_id: ${widget.ppt_id}');
+      //       },
+      //     ),
+      //     Flexible(
+      //       child: messageWidget,
+      //     ),
+      //   ],
+      // ),
     );
   }
 }

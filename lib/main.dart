@@ -4,8 +4,16 @@ import 'personal.dart';
 import 'course.dart';
 import 'log_in.dart';
 import 'register.dart';
+import 'package:provider/provider.dart';
 
-void main() => runApp(MyApp());
+void main() {
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => ThemeProvider(),
+      child: MyApp(),
+    ),
+  );
+}
 
 class MyApp extends StatelessWidget {
   @override
@@ -23,11 +31,11 @@ class MyApp extends StatelessWidget {
           // indicatorColor: Colors.transparent,
           indicatorColor: Color.fromARGB(255, 249, 247, 247),
           labelTextStyle: WidgetStateProperty.all(
-            const TextStyle(
+            TextStyle(
               fontSize: 16, // 設定字體大小
               fontWeight: FontWeight.bold, // 設定字體粗細
-              color: Color.fromARGB(255, 17, 45, 78)
-              ), // Set your desired text color here
+              color: Provider.of<ThemeProvider>(context).quaternaryColor,
+            ), // Set your desired text color here
           ),
         ),
       ),
@@ -56,9 +64,11 @@ class _NavigationState extends State<Navigation> {
       PersonalInfoPage(userId: userId), // Pass user_id to PersonalInfoPage
     ];
 
+    final themeProvider = Provider.of<ThemeProvider>(context);
+
     return Scaffold(
       bottomNavigationBar: NavigationBar(
-        backgroundColor: const Color.fromARGB(255, 219, 226, 239),
+        backgroundColor: themeProvider.secondaryColor,
         labelBehavior: labelBehavior,
         selectedIndex: currentPageIndex,
         onDestinationSelected: (int index) {
@@ -66,37 +76,37 @@ class _NavigationState extends State<Navigation> {
             currentPageIndex = index;
           });
         },
-        destinations: const <Widget>[
+        destinations: <Widget>[
           NavigationDestination(
             selectedIcon: Icon(
               Icons.class_rounded,
-              color: Color.fromARGB(255, 17, 45, 78), // 選中時的圖標顏色
+              color: themeProvider.quaternaryColor, // 選中時的圖標顏色
             ),
             icon: Icon(
               Icons.class_outlined,
-              color: Color.fromARGB(255, 17, 45, 78), // 未選中時的圖標顏色
+              color: themeProvider.quaternaryColor, // 未選中時的圖標顏色
             ),
             label: '課程管理',
           ),
           NavigationDestination(
             selectedIcon: Icon(
               Icons.design_services_rounded,
-              color: Color.fromARGB(255, 17, 45, 78), // 選中時的圖標顏色
+              color: themeProvider.quaternaryColor, // 選中時的圖標顏色
             ),
             icon: Icon(
               Icons.design_services_outlined,
-              color: Color.fromARGB(255, 17, 45, 78), // 未選中時的圖標顏色
+              color: themeProvider.quaternaryColor, // 未選中時的圖標顏色
             ),
             label: 'Prompt 管理',
           ),
           NavigationDestination(
             selectedIcon: Icon(
               Icons.account_circle_rounded,
-              color: Color.fromARGB(255, 17, 45, 78), // 選中時的圖標顏色
+              color: themeProvider.quaternaryColor, // 選中時的圖標顏色
             ),
             icon: Icon(
               Icons.account_circle_outlined,
-              color: Color.fromARGB(255, 17, 45, 78), // 未選中時的圖標顏色
+              color: themeProvider.quaternaryColor, // 未選中時的圖標顏色
             ),
             label: '個人資訊',
           ),

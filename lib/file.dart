@@ -11,6 +11,7 @@ import 'package:path/path.dart' as path;
 
 
 const Color backgroundColor = Color.fromARGB(255, 61, 61, 61);
+const double textSize = 20.0;
 
 class FilePage extends StatefulWidget {
   final String courseName;
@@ -224,7 +225,7 @@ class _FilePageState extends State<FilePage> {
                   ),
                   child: Text(
                     '課程簡報',
-                    style: TextStyle(color: Colors.white), // Set text color to white
+                    style: TextStyle(color: Colors.white, fontSize: textSize), // Set text color to white
                   ),
                 ),
               ),
@@ -244,7 +245,7 @@ class _FilePageState extends State<FilePage> {
                   ),
                   child: Text(
                     '補充教材',
-                    style: TextStyle(color: Colors.white), // Set text color to white
+                    style: TextStyle(color: Colors.white, fontSize: textSize), // Set text color to white
                   ),
                 ),
               ),
@@ -412,7 +413,7 @@ class _FileTileState extends State<FileTile> {
                           value: value,
                           child: Text(
                             value,
-                            style: TextStyle(color: Colors.white),
+                            style: TextStyle(color: Colors.white, fontSize: textSize),
                           ),
                         );
                       }).toList();
