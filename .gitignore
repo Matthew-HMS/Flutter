@@ -60,6 +60,8 @@ app.*.map.json
 !ios/**
 !macos/
 !macos/**
+!assets/
+!assets/**
 
 .vscode
 android
