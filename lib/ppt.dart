@@ -397,12 +397,6 @@ class _SlideViewState extends State<SlideView> {
         Expanded(
           child: Row(
             children: [
-              IconButton(
-                icon: Icon(Icons.arrow_back, color: Colors.green),
-                onPressed: () {
-                  widget.pdfViewerController.previousPage();
-                },
-              ),
               Expanded(
                 child: Container(
                   color: backgroundColor,
@@ -425,12 +419,6 @@ class _SlideViewState extends State<SlideView> {
                     },
                   ),
                 ),
-              ),
-              IconButton(
-                icon: Icon(Icons.arrow_forward, color: Colors.white),
-                onPressed: () {
-                  widget.pdfViewerController.nextPage();
-                },
               ),
             ],
           ),
