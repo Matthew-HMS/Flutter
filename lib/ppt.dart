@@ -624,6 +624,18 @@ class _ChatSidebarState extends State<ChatSidebar> {
   //   //
   //   super.dispose();
   // }
+  void _resetConversation() {
+    setState(() {
+      messages.clear();
+      messages = [
+        ChatMessage(
+          message: "Hi, how can I help you?",
+          isSentByMe: false,
+        ),
+      ];
+    });
+  }
+  
 
   @override
   Widget build(BuildContext context) {
@@ -688,7 +700,7 @@ class _ChatSidebarState extends State<ChatSidebar> {
                             ),
                             IconButton(
                               icon: Icon(Icons.add_comment_outlined, color: Colors.white, size: 20),
-                              onPressed: (){},
+                              onPressed: _resetConversation,
                             ),
                             IconButton(
                               icon: Icon(Icons.close, color: Colors.white),
