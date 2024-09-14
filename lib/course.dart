@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'file.dart';
 import 'api_course.dart';
+import 'personal.dart';
 import 'dart:io';
 
-const Color backgroundColor = Color.fromARGB(255, 249, 247, 247);
+
+// const Color backgroundColor = Color.fromARGB(255, 249, 247, 247);
 
 class CourseManagementPage extends StatefulWidget {
   const CourseManagementPage({super.key});
@@ -160,28 +163,29 @@ class CourseManagementPageState extends State<CourseManagementPage> {
     showDialog(
       context: context,
       builder: (BuildContext context) {
+        var themeProvider = Provider.of<ThemeProvider>(context, listen: false);
         return AlertDialog(
-          backgroundColor: backgroundColor,
-          title: Text('請輸入課程名稱' ,style: TextStyle(color: Color.fromARGB(255, 17, 45, 78))),
+          backgroundColor: themeProvider.primaryColor,
+          title: Text('請輸入課程名稱' ,style: TextStyle(color: themeProvider.tertiaryColor)),
           content: TextField(
             controller: _courseNameController,
             decoration: InputDecoration(
               hintText: 'Course Name', 
               hintStyle: TextStyle(color: Colors.grey)
             ),
-            style: TextStyle(color: Color.fromARGB(255, 63, 114, 175))
+            style: TextStyle(color: themeProvider.tertiaryColor)
 
 
           ),
           actions: <Widget>[
             TextButton(
-              child: Text('取消', style: TextStyle(color: Color.fromARGB(255, 17, 45, 78))),
+              child: Text('取消', style: TextStyle(color: themeProvider.quaternaryColor)),
               onPressed: () {
                 Navigator.of(context).pop();
               },
             ),
             TextButton(
-              child: Text('加入', style: TextStyle(color: Color.fromARGB(255, 17, 45, 78)),),
+              child: Text('加入', style: TextStyle(color: themeProvider.quaternaryColor),),
               onPressed: () {
                 addCourseTile(_courseNameController.text);
                 Navigator.of(context).pop();
@@ -195,8 +199,9 @@ class CourseManagementPageState extends State<CourseManagementPage> {
 
   @override
   Widget build(BuildContext context) {
+    var themeProvider = Provider.of<ThemeProvider>(context, listen: false);
     return Scaffold(
-      backgroundColor: backgroundColor,
+      backgroundColor: themeProvider.primaryColor,
       body: Column(
         children: [
           Expanded(
@@ -254,6 +259,7 @@ class _CourseTileState extends State<CourseTile> {
 
   @override
   Widget build(BuildContext context) {
+    var themeProvider = Provider.of<ThemeProvider>(context, listen: false);
     return InkWell(
       onTap: () {
         Navigator.push(
@@ -269,7 +275,7 @@ class _CourseTileState extends State<CourseTile> {
         );
       },
       child: Card(
-        color: Color.fromARGB(255, 219, 226, 239),
+        color: themeProvider.secondaryColor,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -280,7 +286,7 @@ class _CourseTileState extends State<CourseTile> {
               Icon(
                 Icons.book_outlined,
                 size: 100,
-                color: Color.fromARGB(255, 63, 114, 175),
+                color: themeProvider.tertiaryColor,
               ),
             Spacer(), // Pushes the title and button to the bottom
             Padding(
@@ -293,7 +299,7 @@ class _CourseTileState extends State<CourseTile> {
                     child: Text(
                       _title,
                       style: TextStyle(
-                        color: Color.fromARGB(255, 63, 114, 175), 
+                        color: themeProvider.tertiaryColor, 
                         fontSize: textSize
                       ),
                       overflow: TextOverflow.ellipsis,
@@ -319,12 +325,12 @@ class _CourseTileState extends State<CourseTile> {
                           value: value,
                           child: Text(
                             value,
-                            style: TextStyle(color: Colors.white, fontSize: 20),
+                            style: TextStyle(color: themeProvider.tertiaryColor, fontSize: 20),
                           ),
                         );
                       }).toList();
                     },
-                    color: Color.fromARGB(255, 63, 114, 175),
+                    color: themeProvider.primaryColor,
                   ),
                 ],
               ),
@@ -336,30 +342,31 @@ class _CourseTileState extends State<CourseTile> {
   }
 
   void showEditDialog(BuildContext context) {
+    var themeProvider = Provider.of<ThemeProvider>(context, listen: false);
     TextEditingController _controller = TextEditingController(text: _title);
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          backgroundColor: backgroundColor,
-          title: Text('編輯名稱',style: TextStyle(color: Color.fromARGB(255, 17, 45, 78))),
+          backgroundColor: themeProvider.primaryColor,
+          title: Text('編輯名稱',style: TextStyle(color: themeProvider.tertiaryColor)),
           content: TextField(
             controller: _controller,
             decoration: InputDecoration(
               hintText: 'New title',
               hintStyle: TextStyle(color: Colors.grey)
               ),
-              style: TextStyle(color: Color.fromARGB(255, 63, 114, 175))
+              style: TextStyle(color: themeProvider.tertiaryColor)
           ),
           actions: <Widget>[
             TextButton(
-              child: Text('取消', style: TextStyle(color: Color.fromARGB(255, 17, 45, 78))),
+              child: Text('取消', style: TextStyle(color: themeProvider.quaternaryColor)),
               onPressed: () {
                 Navigator.of(context).pop();
               },
             ),
             TextButton(
-              child: Text('保存', style: TextStyle(color: Color.fromARGB(255, 17, 45, 78))),
+              child: Text('保存', style: TextStyle(color: themeProvider.quaternaryColor)),
               onPressed: () {
                 setState(() {
                   String newTitle = _controller.text;
@@ -382,23 +389,26 @@ class AddCourseTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onAddCourse,
-      child: Card(
-        color: Color.fromARGB(255, 219, 226, 239),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.add,
-              size: 100,
-              color: Color.fromARGB(255, 63, 114, 175), // Change 'Colors.red' to your desired color
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, child) {
+        return InkWell(
+          onTap: onAddCourse,
+          child: Card(
+            color: themeProvider.secondaryColor,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.add,
+                  size: 100,
+                  color: themeProvider.tertiaryColor,
+                ),
+                SizedBox(height: 8),
+              ],
             ),
-            SizedBox(height: 8),
-            
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }

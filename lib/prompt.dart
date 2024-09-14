@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ncu_emi/chat.dart';
 import 'package:provider/provider.dart';
 import 'api_prompt.dart';
 import 'personal.dart';
@@ -87,19 +88,19 @@ class _PromptManagementPageState extends State<PromptManagementPage> {
       builder: (context) {
         return AlertDialog(
           title: Text('編輯Prompt',style: TextStyle(color: themeProvider.tertiaryColor, fontSize: textSize)),
-          backgroundColor: Colors.white,
+          backgroundColor: themeProvider.primaryColor,
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
                 controller: titleController,
-                decoration: InputDecoration(labelText: '標題', labelStyle: TextStyle(color: themeProvider.tertiaryColor, fontSize: textSize)),
-                style: TextStyle(color: Color.fromARGB(255, 63, 114, 175), fontSize: textSize),
+                decoration: InputDecoration(labelText: '標題', labelStyle: TextStyle(color: themeProvider.quaternaryColor, fontSize: textSize)),
+                style: TextStyle(color: themeProvider.tertiaryColor, fontSize: textSize),
               ),
               TextField(
                 controller: descriptionController,
-                decoration: InputDecoration(labelText: 'Prompt描述', labelStyle: TextStyle(color: themeProvider.tertiaryColor, fontSize: textSize)),
-                style: TextStyle(color: Color.fromARGB(255, 63, 114, 175), fontSize: textSize),
+                decoration: InputDecoration(labelText: 'Prompt描述', labelStyle: TextStyle(color: themeProvider.quaternaryColor, fontSize: textSize)),
+                style: TextStyle(color: themeProvider.tertiaryColor, fontSize: textSize),
               ),
             ],
           ),
@@ -108,7 +109,7 @@ class _PromptManagementPageState extends State<PromptManagementPage> {
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text('取消', style: TextStyle(color: themeProvider.tertiaryColor, fontSize: textSize)),
+              child: Text('取消', style: TextStyle(color: themeProvider.quaternaryColor, fontSize: textSize)),
             ),
             TextButton(
               onPressed: () async {
@@ -146,7 +147,7 @@ class _PromptManagementPageState extends State<PromptManagementPage> {
                   print('Failed to editItem: $e');
                 }
               },
-              child: Text('儲存', style: TextStyle(color: themeProvider.tertiaryColor, fontSize: textSize)),
+              child: Text('儲存', style: TextStyle(color: themeProvider.quaternaryColor, fontSize: textSize)),
             ),
           ],
         );
@@ -156,25 +157,33 @@ class _PromptManagementPageState extends State<PromptManagementPage> {
 
 
   void _addItem() {
+    var themeProvider = Provider.of<ThemeProvider>(context, listen: false);
     TextEditingController titleController = TextEditingController();
     TextEditingController descriptionController = TextEditingController();
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('新增Prompt', style: TextStyle(fontSize: textSize)),
+          backgroundColor: themeProvider.primaryColor, // 修改背景顏色，這裡設為白色
+          title: Text('新增Prompt', style: TextStyle(fontSize: textSize, color: themeProvider.tertiaryColor)), // 標題顏色
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
                 controller: titleController,
-                decoration: InputDecoration(labelText: '標題', labelStyle: TextStyle(fontSize: textSize)),
-                style: TextStyle(fontSize: textSize),
+                decoration: InputDecoration(
+                  labelText: '標題', 
+                  labelStyle: TextStyle(fontSize: textSize, color: themeProvider.quaternaryColor), // 標籤顏色
+                ),
+                style: TextStyle(fontSize: textSize, color: themeProvider.tertiaryColor),
               ),
               TextField(
                 controller: descriptionController,
-                decoration: InputDecoration(labelText: 'Prompt描述', labelStyle: TextStyle(fontSize: textSize)),
-                style: TextStyle(fontSize: textSize),
+                decoration: InputDecoration(
+                  labelText: 'Prompt描述', 
+                  labelStyle: TextStyle(fontSize: textSize, color: themeProvider.quaternaryColor), // 標籤顏色
+                ),
+                style: TextStyle(fontSize: textSize, color: themeProvider.tertiaryColor), // 文字顏色
               ),
             ],
           ),
@@ -183,7 +192,7 @@ class _PromptManagementPageState extends State<PromptManagementPage> {
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text('取消', style: TextStyle(fontSize: textSize)),
+              child: Text('取消', style: TextStyle(fontSize: textSize, color: themeProvider.quaternaryColor)), 
             ),
             TextButton(
               onPressed: () async {
@@ -210,7 +219,7 @@ class _PromptManagementPageState extends State<PromptManagementPage> {
                   print('Failed to addItem: $e');
                 }
               },
-              child: Text('新增', style: TextStyle(fontSize: textSize)),
+              child: Text('新增', style: TextStyle(fontSize: textSize, color: themeProvider.quaternaryColor)), // 新增按鈕顏色
             ),
           ],
         );
@@ -249,11 +258,11 @@ class _PromptManagementPageState extends State<PromptManagementPage> {
     Widget listItem = ListTile(
       title: Text(
         item.name,
-        style: TextStyle(color: Color.fromARGB(255, 17, 45, 78), fontSize: textSize),
+        style: TextStyle(color: themeProvider.quaternaryColor, fontSize: textSize),
       ),
       subtitle: Text(
         item.content,
-        style: TextStyle(color: Color.fromARGB(255, 63, 114, 175), fontSize: textSize - 4),
+        style: TextStyle(color: themeProvider.tertiaryColor, fontSize: textSize - 4),
       ),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
@@ -261,16 +270,16 @@ class _PromptManagementPageState extends State<PromptManagementPage> {
           IconButton(
             icon: Icon(
               item.isStarred ? Icons.star : Icons.star_border,
-              color: Color.fromARGB(255, 63, 114, 175),
+              color: themeProvider.tertiaryColor,
             ),
             onPressed: () => _starItem(index),
           ),
           IconButton(
-            icon: Icon(Icons.edit, color: Color.fromARGB(255, 63, 114, 175)),
+            icon: Icon(Icons.edit, color: themeProvider.tertiaryColor),
             onPressed: () => _editItem(index),
           ),
           IconButton(
-            icon: Icon(Icons.delete, color: Color.fromARGB(255, 63, 114, 175)),
+            icon: Icon(Icons.delete, color: themeProvider.tertiaryColor),
             onPressed: () => _deleteItem(index),
           ),
         ],
@@ -295,8 +304,9 @@ class _PromptManagementPageState extends State<PromptManagementPage> {
 
   @override
   Widget build(BuildContext context) {
+    var themeProvider = Provider.of<ThemeProvider>(context, listen: false); 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: themeProvider.primaryColor,
       body: Padding(
         padding: const EdgeInsets.only(left: 100.0, top: 75.0, right: 100.0),
         child: Column(
@@ -308,18 +318,18 @@ class _PromptManagementPageState extends State<PromptManagementPage> {
                     controller: _searchController,
                     decoration: InputDecoration(
                       hintText: '搜尋',
-                      hintStyle: TextStyle(color: Color.fromARGB(255, 63, 114, 175), fontSize: textSize),
-                      prefixIcon: Icon(Icons.search, color: Color.fromARGB(255, 63, 114, 175)),
+                      hintStyle: TextStyle(color: themeProvider.tertiaryColor, fontSize: textSize),
+                      prefixIcon: Icon(Icons.search, color: themeProvider.tertiaryColor),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(30.0),
-                        borderSide: BorderSide(color: Color.fromARGB(255, 17, 45, 78)),
+                        borderSide: BorderSide(color: themeProvider.quaternaryColor),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(30.0),
-                        borderSide: BorderSide(color: Color.fromARGB(255, 17, 45, 78)),
+                        borderSide: BorderSide(color: themeProvider.quaternaryColor),
                       ),
                     ),
-                    style: TextStyle(color: Color.fromARGB(255, 63, 114, 175), fontSize: textSize),
+                    style: TextStyle(color: themeProvider.tertiaryColor, fontSize: textSize),
                   ),
                 ),
                 SizedBox(width: 10),
@@ -329,8 +339,8 @@ class _PromptManagementPageState extends State<PromptManagementPage> {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30.0),
                     ),
-                    backgroundColor: Color.fromARGB(255, 63, 114, 175), // Background color
-                    foregroundColor: Colors.white, // Text color
+                    backgroundColor: themeProvider.tertiaryColor, // Background color
+                    foregroundColor: themeProvider.primaryColor, // Text color
                   ),
                   child: Text('新增Prompt', style: TextStyle(fontSize: textSize)),
                 ),
@@ -342,7 +352,7 @@ class _PromptManagementPageState extends State<PromptManagementPage> {
                   ? Center(
                       child: Text(
                         '無符合項目',
-                        style: TextStyle(color: Color.fromARGB(255, 63, 114, 175), fontSize: textSize),
+                        style: TextStyle(color: themeProvider.tertiaryColor, fontSize: textSize),
                       ),
                     )
                   // animate lead to error

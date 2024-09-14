@@ -80,7 +80,7 @@ class _NavigationState extends State<Navigation> {
           NavigationDestination(
             selectedIcon: Icon(
               Icons.class_rounded,
-              color: themeProvider.quaternaryColor, // 選中時的圖標顏色
+              color: Color.fromARGB(255, 17, 45, 78), // 選中時的圖標顏色
             ),
             icon: Icon(
               Icons.class_outlined,
@@ -91,7 +91,7 @@ class _NavigationState extends State<Navigation> {
           NavigationDestination(
             selectedIcon: Icon(
               Icons.design_services_rounded,
-              color: themeProvider.quaternaryColor, // 選中時的圖標顏色
+              color: Color.fromARGB(255, 17, 45, 78), // 選中時的圖標顏色
             ),
             icon: Icon(
               Icons.design_services_outlined,
@@ -102,7 +102,7 @@ class _NavigationState extends State<Navigation> {
           NavigationDestination(
             selectedIcon: Icon(
               Icons.account_circle_rounded,
-              color: themeProvider.quaternaryColor, // 選中時的圖標顏色
+              color: Color.fromARGB(255, 17, 45, 78), // 選中時的圖標顏色
             ),
             icon: Icon(
               Icons.account_circle_outlined,
