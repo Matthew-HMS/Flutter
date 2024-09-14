@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'api_prompt.dart';
 import 'personal.dart';
 
@@ -75,27 +76,29 @@ class _PromptManagementPageState extends State<PromptManagementPage> {
     });
   }
 
-  void _editItem(int index) {
+  void _editItem(int index) {    
     print("edit prompt: "+_filteredItems[index].prompt_id.toString());
+    var themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+
     TextEditingController titleController = TextEditingController(text: _filteredItems[index].name);
     TextEditingController descriptionController = TextEditingController(text: _filteredItems[index].content);
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('編輯Prompt',style: TextStyle(color: Color.fromARGB(255, 17, 45, 78), fontSize: textSize)),
+          title: Text('編輯Prompt',style: TextStyle(color: themeProvider.tertiaryColor, fontSize: textSize)),
           backgroundColor: Colors.white,
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
                 controller: titleController,
-                decoration: InputDecoration(labelText: '標題', labelStyle: TextStyle(color: Color.fromARGB(255, 17, 45, 78), fontSize: textSize)),
+                decoration: InputDecoration(labelText: '標題', labelStyle: TextStyle(color: themeProvider.tertiaryColor, fontSize: textSize)),
                 style: TextStyle(color: Color.fromARGB(255, 63, 114, 175), fontSize: textSize),
               ),
               TextField(
                 controller: descriptionController,
-                decoration: InputDecoration(labelText: 'Prompt描述', labelStyle: TextStyle(color: Color.fromARGB(255, 17, 45, 78), fontSize: textSize)),
+                decoration: InputDecoration(labelText: 'Prompt描述', labelStyle: TextStyle(color: themeProvider.tertiaryColor, fontSize: textSize)),
                 style: TextStyle(color: Color.fromARGB(255, 63, 114, 175), fontSize: textSize),
               ),
             ],
@@ -105,7 +108,7 @@ class _PromptManagementPageState extends State<PromptManagementPage> {
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text('取消', style: TextStyle(color: Color.fromARGB(255, 17, 45, 78), fontSize: textSize)),
+              child: Text('取消', style: TextStyle(color: themeProvider.tertiaryColor, fontSize: textSize)),
             ),
             TextButton(
               onPressed: () async {
@@ -143,7 +146,7 @@ class _PromptManagementPageState extends State<PromptManagementPage> {
                   print('Failed to editItem: $e');
                 }
               },
-              child: Text('儲存', style: TextStyle(color: Color.fromARGB(255, 17, 45, 78), fontSize: textSize)),
+              child: Text('儲存', style: TextStyle(color: themeProvider.tertiaryColor, fontSize: textSize)),
             ),
           ],
         );
@@ -242,6 +245,7 @@ class _PromptManagementPageState extends State<PromptManagementPage> {
   }
 
   Widget _buildItem(Prompt item, Animation<double>? animation, int index) {
+    var themeProvider = Provider.of<ThemeProvider>(context, listen: false);
     Widget listItem = ListTile(
       title: Text(
         item.name,

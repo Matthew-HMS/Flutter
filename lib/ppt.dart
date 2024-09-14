@@ -195,7 +195,7 @@ class _SlideViewState extends State<SlideView> {
       
       if (jsonResponse.isEmpty) {      
         messages.add(ChatMessage(
-          message: "Hello, how can I assist you?",
+          message: "Hello, how can I help you?",
           isSentByMe: false,
         ));
       }
