@@ -53,11 +53,16 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
+
+# 不忽略 macos 以及 ios 資料夾
+!ios/
+!ios/**
+!macos/
+!macos/**
+
 .vscode
 android
-ios
 linux
-macos
 test
 web
 windows
