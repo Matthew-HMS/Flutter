@@ -8,7 +8,8 @@ import 'personal.dart';
 const double textSize = 20.0;
 
 class PromptManagementPage extends StatefulWidget {
-  @override
+  final int userId;
+  const PromptManagementPage({Key? key, required this.userId}) : super(key: key);
   _PromptManagementPageState createState() => _PromptManagementPageState();
 }
 
@@ -25,12 +26,12 @@ class _PromptManagementPageState extends State<PromptManagementPage> {
       print('Current query: ${_searchController.text}'); // Debug print statement
       _filterItems(_searchController.text);
     });
-    _fetchPrompts();
+    _fetchPrompts(widget.userId);
   }
 
-  Future<void> _fetchPrompts() async {
+  Future<void> _fetchPrompts(int user_id) async {
     try {
-      List<Prompt> prompts = await ApiService.fetchModels();
+      List<Prompt> prompts = await ApiService.fetchModels(user_id);
       setState(() {
         _items = prompts;
         _filteredItems = List.from(_items);
@@ -198,22 +199,7 @@ class _PromptManagementPageState extends State<PromptManagementPage> {
               onPressed: () async {
                 try {
                   await ApiService.createPrompt(titleController.text, descriptionController.text);
-                  // var newItem = Prompt(
-                  //   prompt_id: 0, // ID會在API創建後由後端返回，這裡先給一個臨時值
-                  //   name: titleController.text,
-                  //   content: descriptionController.text,
-                  // );
-                  // setState(() {
-                  //   _items.add(newItem);
-                  //   _filteredItems.add(newItem);
-                  //   _listKey.currentState?.insertItem(_filteredItems.length - 1);
-                  // });
-                  // Navigator.of(context).pop();
-                  List<Prompt> prompts = await ApiService.fetchModels();
-                  setState(() {
-                    _items = prompts;
-                    _filteredItems = List.from(_items);
-                  });
+                  _fetchPrompts(widget.userId);                  
                   Navigator.of(context).pop();
                 } catch (e) {
                   print('Failed to addItem: $e');
@@ -249,7 +235,7 @@ class _PromptManagementPageState extends State<PromptManagementPage> {
       print('Failed to deleteItem: $e');
     }
     finally{
-      _fetchPrompts();
+      _fetchPrompts(widget.userId);
     }
   }
 

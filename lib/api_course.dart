@@ -4,8 +4,8 @@ import 'package:http/http.dart' as http;
 class ApiService {
   static const String baseUrl = "http://127.0.0.1:8000/";
 
-  static Future<List<Course>> fetchModels() async {
-    final response = await http.get(Uri.parse(baseUrl + "classes/"));
+  static Future<List<Course>> fetchModels(int user_id) async {
+    final response = await http.get(Uri.parse(baseUrl + "classes/?user_id=$user_id"));
 
     if (response.statusCode == 200) {
       // print('Response body: ${response.body}'); // 查看原始 JSON 字串

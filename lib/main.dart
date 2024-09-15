@@ -12,7 +12,7 @@ void main() {
       create: (_) => ThemeProvider(),
       child: MyApp(),
     ),
-  );
+  );  
 }
 
 class MyApp extends StatelessWidget {
@@ -59,8 +59,8 @@ class _NavigationState extends State<Navigation> {
   Widget build(BuildContext context) {
     final int userId = ModalRoute.of(context)!.settings.arguments as int;
     final List<Widget> pages = [
-      const CourseManagementPage(),
-      PromptManagementPage(),
+      CourseManagementPage(userId: userId),
+      PromptManagementPage(userId: userId),
       PersonalInfoPage(userId: userId), // Pass user_id to PersonalInfoPage
     ];
 

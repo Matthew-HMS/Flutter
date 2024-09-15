@@ -4,8 +4,8 @@ import 'package:http/http.dart' as http;
 class ApiService {
   static const String baseUrl = "http://127.0.0.1:8000/";
 
-  static Future<List<Prompt>> fetchModels() async {
-    final response = await http.get(Uri.parse(baseUrl + "prompt/"));
+  static Future<List<Prompt>> fetchModels(int user_id) async {
+    final response = await http.get(Uri.parse(baseUrl + "prompt/?user_id=$user_id"));
 
     if (response.statusCode == 200) {
       print('call prompt fetchModels');

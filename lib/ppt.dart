@@ -26,8 +26,9 @@ List<Widget> messages = [];
 class PptPage extends StatefulWidget {
   final String filePath;
   final int pptId;
+  final int user_id;
 
-  const PptPage({Key? key, required this.filePath, required this.pptId}) : super(key: key);
+  const PptPage({Key? key, required this.filePath, required this.pptId, required this.user_id}) : super(key: key);
 
   @override
   _PptPageState createState() => _PptPageState();
@@ -95,6 +96,7 @@ class _PptPageState extends State<PptPage> {
               isFullScreen: _isFullScreen, // Pass the fullscreen state
               isChatSidebarOpen: _isChatSidebarOpen, // Pass the chat sidebar state
               toggleChatSidebarCallback: _toggleChatSidebar,
+              user_id: widget.user_id
             ),
           ),
           if (_isChatSidebarOpen && !_isFullScreen)
@@ -132,7 +134,8 @@ class SlideView extends StatefulWidget {
   final VoidCallback toggleChatSidebarCallback;
   final VoidCallback toggleFullScreenCallback; // Add this line
   final bool isFullScreen; // Add this line
-    final bool isChatSidebarOpen;
+  final bool isChatSidebarOpen;
+  final int user_id;
 
 
   const SlideView({
@@ -150,6 +153,7 @@ class SlideView extends StatefulWidget {
     required this.isChatSidebarOpen, // Add this linee
     required this.toggleFullScreenCallback, // Add this line
     required this.toggleChatSidebarCallback,
+    required this.user_id
   }) : super(key: key);
 
   @override
@@ -225,13 +229,9 @@ class _SlideViewState extends State<SlideView> {
     }
   }
 
-
-
-
-
   Future<void> fetchPrompts() async {
     try {
-      List<ApiPrompt.Prompt> prompts = await ApiPrompt.ApiService.fetchModels();
+      List<ApiPrompt.Prompt> prompts = await ApiPrompt.ApiService.fetchModels(widget.user_id);
       setState(() {
         _filteredItems = prompts.map((prompt) {
           return {

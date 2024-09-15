@@ -9,8 +9,8 @@ import 'dart:io';
 // const Color backgroundColor = Color.fromARGB(255, 249, 247, 247);
 
 class CourseManagementPage extends StatefulWidget {
-  const CourseManagementPage({super.key});
-
+  final int userId;
+  const CourseManagementPage({Key? key, required this.userId}) : super(key: key);
   get fileManager => null;
 
   @override
@@ -28,12 +28,13 @@ class CourseManagementPageState extends State<CourseManagementPage> {
     super.initState();
     // Add the AddCourseTile initially
     courseTiles.add(AddCourseTile(onAddCourse: promptCourseName));
-    _fetchCourses();
+    _fetchCourses(widget.userId);
   }
 
-  Future<void> _fetchCourses() async {
+  Future<void> _fetchCourses(int user_id) async {
     try {
-      List<Course> courses = await ApiService.fetchModels();
+      print("user_id: $user_id");
+      List<Course> courses = await ApiService.fetchModels(user_id);
       setState(() {
         courseTiles = [
           AddCourseTile(onAddCourse: promptCourseName),
@@ -42,6 +43,7 @@ class CourseManagementPageState extends State<CourseManagementPage> {
               title: course.name,
               class_id: course.class_id,
               courseManager: this,
+              user_id: widget.userId
             );
           }).toList(),
         ];
@@ -63,7 +65,7 @@ class CourseManagementPageState extends State<CourseManagementPage> {
         print('Directory created: $directoryPath');
         final response = await ApiService.createCourse(courseName, '');
         if (response.statusCode == 201) {
-          _fetchCourses(); // 新增成功後重新載入課程
+          _fetchCourses(widget.userId); // 新增成功後重新載入課程
         }
       } else {
         print('Directory already exists: $directoryPath');
@@ -72,7 +74,7 @@ class CourseManagementPageState extends State<CourseManagementPage> {
       print('Failed to create course: $e');
     }
     finally{
-      _fetchCourses(); // 新增成功後重新載入課程
+      _fetchCourses(widget.userId); // 新增成功後重新載入課程
     }
   }
 
@@ -103,7 +105,7 @@ class CourseManagementPageState extends State<CourseManagementPage> {
       print('Failed to delete course: $e');
     }
     finally{
-      _fetchCourses(); // 刪除成功後重新載入課程
+      _fetchCourses(widget.userId); // 刪除成功後重新載入課程
     }
   }
 
@@ -126,14 +128,14 @@ class CourseManagementPageState extends State<CourseManagementPage> {
           print('Old directory does not exist: $directoryPath');
         }
         // reload course tiles
-        _fetchCourses();      
+        _fetchCourses(widget.userId);      
       }
     } catch (e) {
       print('Failed to update course: $e');
     }
     finally{
       // reload course tiles
-      _fetchCourses(); 
+      _fetchCourses(widget.userId); 
     }
   }
 
@@ -229,10 +231,11 @@ class CourseManagementPageState extends State<CourseManagementPage> {
 class CourseTile extends StatefulWidget {
   String title;
   int class_id;
+  int user_id;
   final String? imageUrl;
   final CourseManagementPageState courseManager;
 
-  CourseTile({required this.title, required this.class_id, this.imageUrl, required this.courseManager});
+  CourseTile({required this.title, required this.class_id, required this.user_id, this.imageUrl, required this.courseManager});
 
   @override
   _CourseTileState createState() => _CourseTileState();
@@ -270,6 +273,7 @@ class _CourseTileState extends State<CourseTile> {
               class_id: widget.class_id,
               files: widget.courseManager.getFilesForCourse(_title),
               otherFiles: widget.courseManager.getOtherFilesForCourse(_title),
+              user_id: widget.user_id
             ),
           ),
         );
