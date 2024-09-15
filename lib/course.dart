@@ -31,19 +31,19 @@ class CourseManagementPageState extends State<CourseManagementPage> {
     _fetchCourses(widget.userId);
   }
 
-  Future<void> _fetchCourses(int user_id) async {
+  Future<void> _fetchCourses(int userId) async {
     try {
-      print("user_id: $user_id");
-      List<Course> courses = await ApiService.fetchModels(user_id);
+      print("userId: $userId");
+      List<Course> courses = await ApiService.fetchModels(userId);
       setState(() {
         courseTiles = [
           AddCourseTile(onAddCourse: promptCourseName),
           ...courses.map((course) {
             return CourseTile(
               title: course.name,
-              class_id: course.class_id,
+              classId: course.classId,
               courseManager: this,
-              user_id: widget.userId
+              userId: widget.userId
             );
           }).toList(),
         ];
@@ -63,7 +63,7 @@ class CourseManagementPageState extends State<CourseManagementPage> {
       if (!newDirectory.existsSync()) { // undo: must show alert if directory exists
         newDirectory.createSync(recursive: true);
         print('Directory created: $directoryPath');
-        final response = await ApiService.createCourse(courseName, '');
+        final response = await ApiService.createCourse(courseName, '', widget.userId);
         if (response.statusCode == 201) {
           _fetchCourses(widget.userId); // 新增成功後重新載入課程
         }
@@ -111,7 +111,7 @@ class CourseManagementPageState extends State<CourseManagementPage> {
 
   void updateCourseTileTitle(int class_id, String newCourseName, String courseName) async {
     print('Class ID: $class_id, New Title: $newCourseName');
-    Course course = Course(class_id: class_id, name: newCourseName, user_id: 1);//預設為 1
+    Course course = Course(classId: class_id, name: newCourseName, userId: 1);//預設為 1
     try {
       final response = await ApiService.editCourse(course);
       if (response.statusCode == 200) { 
@@ -230,12 +230,12 @@ class CourseManagementPageState extends State<CourseManagementPage> {
 
 class CourseTile extends StatefulWidget {
   String title;
-  int class_id;
-  int user_id;
+  int classId;
+  int userId;
   final String? imageUrl;
   final CourseManagementPageState courseManager;
 
-  CourseTile({required this.title, required this.class_id, required this.user_id, this.imageUrl, required this.courseManager});
+  CourseTile({required this.title, required this.classId, required this.userId, this.imageUrl, required this.courseManager});
 
   @override
   _CourseTileState createState() => _CourseTileState();
@@ -270,10 +270,10 @@ class _CourseTileState extends State<CourseTile> {
           MaterialPageRoute(
             builder: (context) => FilePage( // Change to FilePage
               courseName: _title,
-              class_id: widget.class_id,
+              class_id: widget.classId,
               files: widget.courseManager.getFilesForCourse(_title),
               otherFiles: widget.courseManager.getOtherFilesForCourse(_title),
-              user_id: widget.user_id
+              userId: widget.userId
             ),
           ),
         );
@@ -319,7 +319,7 @@ class _CourseTileState extends State<CourseTile> {
                       if (newValue == '編輯名稱') {
                         showEditDialog(context);
                       } else if (newValue == '刪除課程') {
-                        widget.courseManager.deleteCourseTile(widget.class_id, _title);
+                        widget.courseManager.deleteCourseTile(widget.classId, _title);
                       }
                     },
                     itemBuilder: (BuildContext context) {
@@ -374,7 +374,7 @@ class _CourseTileState extends State<CourseTile> {
               onPressed: () {
                 setState(() {
                   String newTitle = _controller.text;
-                  widget.courseManager.updateCourseTileTitle(widget.class_id, newTitle, _title);
+                  widget.courseManager.updateCourseTileTitle(widget.classId, newTitle, _title);
                 });
                 Navigator.of(context).pop();
               },

@@ -21,14 +21,14 @@ class FilePage extends StatefulWidget {
   final int class_id;
   final List<String> files;
   final List<String> otherFiles;
-  final int user_id;
+  final int userId;
 
   FilePage({
     required this.courseName,
     required this.class_id,
     required this.files,
     required this.otherFiles,
-    required this.user_id
+    required this.userId
   });
 
   @override
@@ -201,7 +201,7 @@ class _FilePageState extends State<FilePage> {
         builder: (context) => PptPage(
           filePath: ppt_local_path, 
           pptId: pptId,
-          user_id: widget.user_id,
+          userId: widget.userId,
         ),
       ),
     );

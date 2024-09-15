@@ -17,7 +17,7 @@ class ApiService {
     }
   }
 
-  static Future<http.Response> createCourse(String name, String content) async {
+  static Future<http.Response> createCourse(String name, String content, int user_id) async {
     print('create class ...');
     final response = await http.post(
       Uri.parse(baseUrl + "classes/"),
@@ -26,7 +26,7 @@ class ApiService {
       },
       body: jsonEncode(<String, String>{
         'class_name': name,
-        'user_user': '1', //預設為 1
+        'user_user': user_id.toString(), //預設為 1
       }),
     );
 
@@ -66,9 +66,9 @@ class ApiService {
         'Content-Type': 'application/json; charset=UTF-8',
       },
       body: jsonEncode(<String, dynamic>{
-        'class_id': course.class_id.toString(),
+        'class_id': course.classId.toString(),
         'class_name': course.name,
-        'user_user': course.user_id.toString(),
+        'user_user': course.userId.toString(),
       }),
     );
 
@@ -83,17 +83,17 @@ class ApiService {
 }
 
 class Course {
-  final int class_id;
+  final int classId;
   String name;
-  final int user_id;
+  final int userId;
   
-  Course({required this.class_id, required this.name, required this.user_id});
+  Course({required this.classId, required this.name, required this.userId});
 
   factory Course.fromJson(Map<String, dynamic> json) {
     return Course(
-      class_id: json['class_id'] as int,
+      classId: json['class_id'] as int,
       name: json['class_name'] as String,
-      user_id: 1, //預設為 1
+      userId: json['user_user'] as int, //預設為 1
     );
   }
 }

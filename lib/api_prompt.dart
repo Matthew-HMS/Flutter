@@ -17,7 +17,7 @@ class ApiService {
     }
   }
 
-  static Future<http.Response> createPrompt(String name, String content) async {
+  static Future<http.Response> createPrompt(String name, String content, int userId) async {
     print('create prompt ...');
     final response = await http.post(
       Uri.parse(baseUrl + "prompt/"),
@@ -27,7 +27,7 @@ class ApiService {
       body: jsonEncode(<String, String>{
         'prompt_name': name,
         'prompt_content': content,
-        'user_user': '1',//預設為 1
+        'user_user': userId.toString(),
       }),
     );
 

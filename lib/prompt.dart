@@ -198,7 +198,7 @@ class _PromptManagementPageState extends State<PromptManagementPage> {
             TextButton(
               onPressed: () async {
                 try {
-                  await ApiService.createPrompt(titleController.text, descriptionController.text);
+                  await ApiService.createPrompt(titleController.text, descriptionController.text, widget.userId);
                   _fetchPrompts(widget.userId);                  
                   Navigator.of(context).pop();
                 } catch (e) {
