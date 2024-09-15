@@ -326,8 +326,8 @@ class _SlideViewState extends State<SlideView> {
                             return Container(
                               color: Colors.transparent,
                               child: ListTile(
-                                title: Text(_filteredItems[index]['title']!, style: TextStyle(color: themeProvider.tertiaryColor, fontSize: textSize)),
-                                subtitle: Text(_filteredItems[index]['description']!, style: TextStyle(color: Colors.green, fontSize: textSize)),
+                                title: Text(_filteredItems[index]['title']!, style: TextStyle(color: themeProvider.quaternaryColor, fontSize: textSize)),
+                                subtitle: Text(_filteredItems[index]['description']!, style: TextStyle(color: themeProvider.tertiaryColor, fontSize: textSize)),
                                 onTap: () {
                                   setState(() {
                                     final text = _controller.text;
