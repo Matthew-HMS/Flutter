@@ -1,12 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-// bool _isDarkMode = false;
-// Color get colorPrimary => _isDarkMode ? Color.fromARGB(255, 61, 61, 61) : Color.fromARGB(255, 249, 247, 247);
-// Color get colorSecondary  => _isDarkMode ? Color.fromARGB(255, 48, 48, 48) : Color.fromARGB(255, 219, 226, 239);
-// Color get colorTertiary  => _isDarkMode ? Color.fromARGB(255, 249, 247, 247) : Color.fromARGB(255, 63, 114, 175);
-// Color get colorQuaternary  => _isDarkMode ? Color.fromARGB(255, 249, 247, 247) : Color.fromARGB(255, 17, 45, 78);
-
 class ThemeProvider with ChangeNotifier {
   bool _isDarkMode = false;
   bool get isDarkMode => _isDarkMode;
@@ -20,6 +14,10 @@ class ThemeProvider with ChangeNotifier {
   Color get secondaryColor => _isDarkMode ? Color.fromARGB(255, 48, 48, 48) : Color.fromARGB(255, 219, 226, 239);
   Color get tertiaryColor => _isDarkMode ? Color.fromARGB(255, 249, 247, 247) : Color.fromARGB(255, 63, 114, 175);
   Color get quaternaryColor => _isDarkMode ? Color.fromARGB(255, 249, 247, 247) : Color.fromARGB(255, 17, 45, 78);
+  Color get pptBackgroundColor => _isDarkMode ? Color.fromARGB(255, 61, 61, 61) : Color.fromARGB(255, 219, 226, 239);
+  Color get chatBackgroundColor => _isDarkMode ? Color.fromARGB(255, 48, 48, 48) : Color.fromARGB(255, 249, 247, 247);
+  Color get chatMessageColor => _isDarkMode ? Color.fromARGB(255, 61, 61, 61) : Color.fromARGB(255, 63, 114, 175);
+  Color get chatPromptTextColor => _isDarkMode ? Colors.grey : Color.fromARGB(255, 249, 247, 247);
 }
 
 

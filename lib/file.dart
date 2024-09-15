@@ -1,16 +1,19 @@
 import 'dart:io';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:http/http.dart';
 import 'course.dart';
 import 'ppt.dart';
 import 'api_file.dart' as apiFile;
 import 'api_ppt.dart' as apiPpt;
+import 'personal.dart';
 import 'package:path/path.dart' as path;
 
 
-const Color backgroundColor = Color.fromARGB(255, 61, 61, 61);
+
+// const Color backgroundColor = Color.fromARGB(255, 61, 61, 61);
 const double textSize = 20.0;
 
 class FilePage extends StatefulWidget {
@@ -203,8 +206,9 @@ class _FilePageState extends State<FilePage> {
 
   @override
   Widget build(BuildContext context) {
+    var themeProvider = Provider.of<ThemeProvider>(context, listen: false);
     return Scaffold(
-      backgroundColor: backgroundColor,
+      backgroundColor: themeProvider.primaryColor,
       body: Column(
         children: [
           Row(
@@ -218,14 +222,14 @@ class _FilePageState extends State<FilePage> {
                     );
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Color.fromARGB(255, 48, 48, 48), // Set button color to black
+                    backgroundColor: themeProvider.secondaryColor, // Set button color to black
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.zero,
                     ),
                   ),
                   child: Text(
                     '課程簡報',
-                    style: TextStyle(color: Colors.white, fontSize: textSize), // Set text color to white
+                    style: TextStyle(color: themeProvider.quaternaryColor, fontSize: textSize), // Set text color to white
                   ),
                 ),
               ),
@@ -238,14 +242,14 @@ class _FilePageState extends State<FilePage> {
                     );
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Color.fromARGB(255, 48, 48, 48), // Set button color to black
+                    backgroundColor: themeProvider.secondaryColor, // Set button color to black
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.zero,
                     ),
                   ),
                   child: Text(
                     '補充教材',
-                    style: TextStyle(color: Colors.white, fontSize: textSize), // Set text color to white
+                    style: TextStyle(color: themeProvider.quaternaryColor, fontSize: textSize), // Set text color to white
                   ),
                 ),
               ),
@@ -254,7 +258,7 @@ class _FilePageState extends State<FilePage> {
           Align(
             alignment: Alignment.centerLeft,
             child: IconButton(
-              icon: Icon(Icons.arrow_back, color: Colors.white, size: 30), // Set icon color to white
+              icon: Icon(Icons.arrow_back, color: themeProvider.quaternaryColor, size: 30), // Set icon color to white
               onPressed: () {
                 Navigator.pop(context);
               },
@@ -364,13 +368,14 @@ class _FileTileState extends State<FileTile> {
 
   @override
   Widget build(BuildContext context) {
+    var themeProvider = Provider.of<ThemeProvider>(context, listen: false);
     return GestureDetector(
       onTap: () {
         print("FileTile tapped");
         widget.onTap?.call();
       },
       child: Card(
-        color: Color.fromARGB(255, 48, 48, 48),
+        color: themeProvider.secondaryColor,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -378,7 +383,7 @@ class _FileTileState extends State<FileTile> {
             Icon(
               Icons.insert_drive_file,
               size: 100,
-              color: Colors.white,
+              color: themeProvider.tertiaryColor,
             ),
             Spacer(), // Pushes the title and button to the bottom
             Padding(
@@ -390,7 +395,7 @@ class _FileTileState extends State<FileTile> {
                   Flexible(
                     child: Text(
                       _title,
-                      style: TextStyle(color: Colors.white),
+                      style: TextStyle(color: themeProvider.tertiaryColor),
                       overflow: TextOverflow.ellipsis,
                       maxLines: 1,
                     ),
@@ -413,12 +418,12 @@ class _FileTileState extends State<FileTile> {
                           value: value,
                           child: Text(
                             value,
-                            style: TextStyle(color: Colors.white, fontSize: textSize),
+                            style: TextStyle(color: themeProvider.tertiaryColor, fontSize: textSize),
                           ),
                         );
                       }).toList();
                     },
-                    color: Color.fromARGB(255, 61, 61, 61),
+                    color: themeProvider.primaryColor,
                   ),
                 ],
               ),

@@ -199,7 +199,7 @@ class CourseManagementPageState extends State<CourseManagementPage> {
 
   @override
   Widget build(BuildContext context) {
-    var themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+    var themeProvider = Provider.of<ThemeProvider>(context, listen: true);
     return Scaffold(
       backgroundColor: themeProvider.primaryColor,
       body: Column(
@@ -259,7 +259,7 @@ class _CourseTileState extends State<CourseTile> {
 
   @override
   Widget build(BuildContext context) {
-    var themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+    var themeProvider = Provider.of<ThemeProvider>(context, listen: true);
     return InkWell(
       onTap: () {
         Navigator.push(

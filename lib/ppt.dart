@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:flutter/services.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -9,8 +10,14 @@ import 'api_prompt.dart' as ApiPrompt;
 import 'api_gpt.dart' as ApiGPT;
 import 'api_tts.dart' as ApiTTS;
 import 'api_gpt.dart' as ApiGPT;
+import 'personal.dart';
 
-const Color backgroundColor = Color.fromARGB(255, 61, 61, 61);
+// class CustomThemeProvider extends ThemeProvider {
+//   Color get primaryColor => isDarkMode ? Colors.red : Colors.blue; // 使用覆寫的 isDarkMode
+//   Color get secondaryColor => isDarkMode ? Colors.green : Colors.orange; // 你可以根據需要覆寫其他顏色
+// }
+
+// const Color backgroundColor = Color.fromARGB(255, 61, 61, 61);
 const Color primaryColor = Color.fromARGB(255, 48, 48, 48);
 const double textSize = 20.0;
 Map<int, List<Widget>> messagesByPage = {};
@@ -67,10 +74,10 @@ class _PptPageState extends State<PptPage> {
     });
   }
 
-  @override
   Widget build(BuildContext context) {
+    var themeProvider = Provider.of<ThemeProvider>(context);
     return Scaffold(
-      backgroundColor: backgroundColor,
+      backgroundColor: themeProvider.pptBackgroundColor,
       body: Row(
         children: <Widget>[
           Expanded(
@@ -101,15 +108,6 @@ class _PptPageState extends State<PptPage> {
               isFullScreen: _isChatSidebarFullScreen,
             ),
           ),
-          // !_isFullScreen
-          //   ? Expanded(
-          //       flex: 1,
-          //       child: ChatSidebar(
-          //         scrollToBottomCallback: _scrollToBottom,
-          //         scrollController: _scrollController,
-          //       ),
-          //     )
-          //   : const SizedBox.shrink()
         ],
       ),
     );
@@ -271,6 +269,7 @@ class _SlideViewState extends State<SlideView> {
   }
 
   void _toggleOverlay() {
+    var themeProvider = Provider.of<ThemeProvider>(context, listen: false);
     if (_overlayEntry != null) {
       _overlayEntry!.remove();
       _overlayEntry = null;
@@ -315,7 +314,7 @@ class _SlideViewState extends State<SlideView> {
                   borderRadius: BorderRadius.circular(10.0),
                   child: Material(
                     elevation: 4.0,
-                    color: primaryColor,
+                    color: themeProvider.chatBackgroundColor,
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(10.0),
                       child: Container(
@@ -327,8 +326,8 @@ class _SlideViewState extends State<SlideView> {
                             return Container(
                               color: Colors.transparent,
                               child: ListTile(
-                                title: Text(_filteredItems[index]['title']!, style: TextStyle(color: Colors.white, fontSize: textSize)),
-                                subtitle: Text(_filteredItems[index]['description']!, style: TextStyle(color: Colors.white70, fontSize: textSize)),
+                                title: Text(_filteredItems[index]['title']!, style: TextStyle(color: themeProvider.tertiaryColor, fontSize: textSize)),
+                                subtitle: Text(_filteredItems[index]['description']!, style: TextStyle(color: Colors.green, fontSize: textSize)),
                                 onTap: () {
                                   setState(() {
                                     final text = _controller.text;
@@ -413,16 +412,9 @@ class _SlideViewState extends State<SlideView> {
 
   @override
   Widget build(BuildContext context) {
+    var themeProvider = Provider.of<ThemeProvider>(context, listen: false);
     return Column(
       children: <Widget>[
-        // 如果不是全螢幕，顯示返回按鈕
-        // if (!widget.isFullScreen)
-        //   Container(
-        //     padding: EdgeInsets.all(10),
-        //     alignment: Alignment.centerLeft,
-        //     child: IconButton(
-        //       icon: Icon(Icons.arrow_back, color: Colors.blue, size: 30),
-        //       onPressed: () => Navigator.of(context).pop(),
         Row(
           children: [
             if (!widget.isFullScreen)
@@ -431,7 +423,7 @@ class _SlideViewState extends State<SlideView> {
                 padding: EdgeInsets.all(10),
                 alignment: Alignment.centerLeft,
                 child: IconButton(
-                  icon: Icon(Icons.arrow_back, color: Colors.white, size: 30),
+                  icon: Icon(Icons.arrow_back, color: themeProvider.quaternaryColor, size: 30),
                   onPressed: () => Navigator.of(context).pop(),
                 ),
               ),
@@ -443,7 +435,7 @@ class _SlideViewState extends State<SlideView> {
                 padding: EdgeInsets.all(10),
                 alignment: Alignment.centerRight,
                 child: IconButton(
-                  icon: Icon(Icons.chat, color: Colors.white, size: 30),
+                  icon: Icon(Icons.chat, color: themeProvider.quaternaryColor, size: 30),
                   onPressed: widget.toggleChatSidebarCallback,
                 ),
               ),
@@ -457,7 +449,7 @@ class _SlideViewState extends State<SlideView> {
             children: [
               Expanded(
                 child: Container(
-                  color: backgroundColor,
+                  color: themeProvider.primaryColor,
                   child: SfPdfViewer.file(
                     File(widget.filePath),
                     controller: widget.pdfViewerController,
@@ -490,7 +482,7 @@ class _SlideViewState extends State<SlideView> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
                 IconButton(
-                  icon: Icon(Icons.arrow_back, color: Colors.red),
+                  icon: Icon(Icons.arrow_back, color: themeProvider.quaternaryColor),
                   onPressed: () {
                     widget.pdfViewerController.previousPage();
                   },
@@ -505,10 +497,10 @@ class _SlideViewState extends State<SlideView> {
                           children: [
                             Text(
                               '$currentPage / $totalPage',
-                              style: TextStyle(fontSize: textSize, color: Colors.white),
+                              style: TextStyle(fontSize: textSize, color: themeProvider.tertiaryColor),
                             ),
                             IconButton(
-                              icon: Icon(Icons.fullscreen, color: Colors.white),
+                              icon: Icon(Icons.fullscreen, color: themeProvider.quaternaryColor),
                               onPressed: () {
                                 widget.toggleFullScreenCallback();
                                 ScaffoldMessenger.of(context).showSnackBar(
@@ -523,7 +515,7 @@ class _SlideViewState extends State<SlideView> {
                   },
                 ),
                 IconButton(
-                  icon: Icon(Icons.arrow_forward, color: Colors.white),
+                  icon: Icon(Icons.arrow_forward, color: themeProvider.quaternaryColor),
                   onPressed: () {
                     widget.pdfViewerController.nextPage();
                   },
@@ -544,12 +536,12 @@ class _SlideViewState extends State<SlideView> {
                     controller: _controller,
                     decoration: InputDecoration(
                       hintText: "Type '/' to search prompts",
-                      hintStyle: TextStyle(color: Colors.white, fontSize: textSize),
+                      hintStyle: TextStyle(color: themeProvider.chatPromptTextColor, fontSize: textSize),
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
                       prefixIcon: Padding(
                         padding: EdgeInsets.only(left: 8.0),
                         child: IconButton(
-                          icon: Icon(FontAwesomeIcons.lightbulb, size: 25.0, color: Colors.white),
+                          icon: Icon(FontAwesomeIcons.lightbulb, size: 25.0, color: themeProvider.quaternaryColor),
                           onPressed: _lightbulbPressed,
                         ),
                       ),
@@ -563,13 +555,13 @@ class _SlideViewState extends State<SlideView> {
                               return ScaleTransition(child: child, scale: animation);
                             },
                             child: _isSent
-                                ? Icon(Icons.check_circle, key: ValueKey<int>(1), size: 20.0, color: Colors.white)
-                                : Icon(FontAwesomeIcons.paperPlane, key: ValueKey<int>(0), size: 20.0, color: Colors.white),
+                                ? Icon(Icons.check_circle, key: ValueKey<int>(1), size: 20.0, color: themeProvider.quaternaryColor)
+                                : Icon(FontAwesomeIcons.paperPlane, key: ValueKey<int>(0), size: 20.0, color: themeProvider.quaternaryColor),
                           ),
                         ),
                       ),
                     ),
-                    style: TextStyle(color: Colors.white, fontSize: textSize),
+                    style: TextStyle(color: themeProvider.tertiaryColor, fontSize: textSize),
                     onSubmitted: (value) {
                       _sendMessage();
                     },
@@ -606,30 +598,12 @@ class ChatSidebar extends StatefulWidget {
 }
 
 class _ChatSidebarState extends State<ChatSidebar> {
-  // 0902
-  // final ScrollController _scrollController = ScrollController(); // Step 1: Declare ScrollController
-
-  // @override
-  // void initState() {
-  //   super.initState();
-  //   // Initialize your ScrollController here if needed
-  // }
-  //
-
-  // @override
-  // void dispose() {    
-  //   //0902
-  //   // _scrollController.dispose(); // Dispose of the ScrollController
-  //   widget.scrollController.dispose();
-  //   //
-  //   super.dispose();
-  // }
   void _resetConversation() {
     setState(() {
       messages.clear();
       messages = [
         ChatMessage(
-          message: "Hi, how can I help you?",
+          message: "Hello, how can I help you?",
           isSentByMe: false,
         ),
       ];
@@ -639,28 +613,9 @@ class _ChatSidebarState extends State<ChatSidebar> {
 
   @override
   Widget build(BuildContext context) {
+    var themeProvider = Provider.of<ThemeProvider>(context, listen: false);
     return Container(
-      // color: Color.fromARGB(255, 48, 48, 48),
-      // child: Scrollbar(
-      //   thickness: 6.0,
-      //   radius: Radius.circular(10),
-      //   //0902
-      //   // controller: _scrollController, // Connect the Scrollbar to the ScrollController
-      //   controller: widget.scrollController, // Connect the Scrollbar to the ScrollController
-      //   child: Column(
-      //     children: <Widget>[
-      //       Expanded(
-      //         child: ListView.builder(
-      //           controller: widget.scrollController, // Step 4: Assign the ScrollController to ListView.builder
-      //           padding: EdgeInsets.all(10),
-      //           itemCount: messages.isEmpty ? 1 : messages.length,
-      //           itemBuilder: (context, index) {
-      //             if (messages.isEmpty) {
-      //               return Center(child: Text("No messages yet."));
-      //             }
-      //             return messages[index];
-      //           }
-      color: backgroundColor,
+      color: themeProvider.pptBackgroundColor,
       child: Column(
         children: [
           Expanded(
@@ -672,7 +627,7 @@ class _ChatSidebarState extends State<ChatSidebar> {
                 padding: const EdgeInsets.all(30.0),
                 child: Container(
                   decoration: BoxDecoration(
-                    color: primaryColor,
+                    color: themeProvider.chatBackgroundColor,
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Column(
@@ -683,7 +638,10 @@ class _ChatSidebarState extends State<ChatSidebar> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             IconButton(
-                              icon: Icon(widget.isFullScreen ? Icons.fullscreen_exit : Icons.fullscreen, color: Colors.white),
+                              icon: Icon(
+                                widget.isFullScreen ? Icons.fullscreen_exit : Icons.fullscreen, 
+                                color: themeProvider.quaternaryColor
+                              ),
                               onPressed: widget.toggleChatSidebarFullScreenCallback,
                             ),
                             Expanded(
@@ -693,17 +651,17 @@ class _ChatSidebarState extends State<ChatSidebar> {
                                   style: TextStyle(
                                     fontSize: 20,
                                     fontWeight: FontWeight.bold,
-                                    color: Colors.white,
+                                    color: themeProvider.tertiaryColor,
                                   ),
                                 ),
                               ),
                             ),
                             IconButton(
-                              icon: Icon(Icons.add_comment_outlined, color: Colors.white, size: 20),
+                              icon: Icon(Icons.add_comment_outlined, color: themeProvider.quaternaryColor, size: 20),
                               onPressed: _resetConversation,
                             ),
                             IconButton(
-                              icon: Icon(Icons.close, color: Colors.white),
+                              icon: Icon(Icons.close, color: themeProvider.quaternaryColor),
                               onPressed: widget.closeChatSidebarCallback,
                             ),
                           ],
@@ -798,17 +756,21 @@ class _ChatMessageState extends State<ChatMessage> {
 
   @override
   Widget build(BuildContext context) {
+    var themeProvider = Provider.of<ThemeProvider>(context, listen: false);
     Widget messageWidget = Container(
       margin: EdgeInsets.symmetric(vertical: 10),
       padding: EdgeInsets.all(10),
       decoration: BoxDecoration(
         // color: widget.isSentByMe ? backgroundColor : Color.fromARGB(255, 80, 80, 80),
-        color: widget.isSentByMe ? Color.fromARGB(255, 120, 120, 120): Color.fromARGB(255, 80, 80, 80),
+        color: themeProvider.chatMessageColor,
         borderRadius: BorderRadius.circular(15),
       ),
       child: SelectableText(
         widget.message,
-        style: TextStyle(fontSize: 16, color: Colors.white),
+        style: TextStyle(
+          fontSize: 16, 
+          color: Color.fromARGB(255, 249, 247, 247)
+        ),
         onSelectionChanged: _handleSelectionChange,
       ),
       // child: MarkdownBody(
@@ -834,7 +796,7 @@ class _ChatMessageState extends State<ChatMessage> {
                 // ApiTTS.GptTTS.isPlayingAudio() ? Icons.stop : Icons.volume_up_rounded, // 更新圖標根據播放狀態
                 isPlayingAudio ? Icons.stop : Icons.volume_up_rounded,
                 size: 20,
-                color: Colors.white,
+                color: themeProvider.quaternaryColor,
               ),
               onPressed: () async {
                 if (isPlayingAudio) {
@@ -868,23 +830,23 @@ class _ChatMessageState extends State<ChatMessage> {
     
     return Align(
       alignment: widget.isSentByMe ? Alignment.centerRight : Alignment.centerLeft,
-      child: messageWidget,
-      // child: Row(
-      //   mainAxisSize: MainAxisSize.min,
-      //   crossAxisAlignment: CrossAxisAlignment.end,
-      //   children: [
-      //     IconButton(
-      //       icon: Icon(Icons.delete, size: 20, color: Colors.white),
-      //       onPressed: () {
-      //         // Print the selected text when the volume_up button is clicked
-      //         print('delete message: ${widget.pptword_id}, page: ${widget.pptword_page}, ppt_id: ${widget.ppt_id}');
-      //       },
-      //     ),
-      //     Flexible(
-      //       child: messageWidget,
-      //     ),
-      //   ],
-      // ),
+      // child: messageWidget,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          IconButton(
+            icon: Icon(Icons.delete, size: 20, color: themeProvider.quaternaryColor),
+            onPressed: () {
+              // Print the selected text when the volume_up button is clicked
+              print('delete message: ${widget.pptword_id}, page: ${widget.pptword_page}, ppt_id: ${widget.ppt_id}');
+            },
+          ),
+          Flexible(
+            child: messageWidget,
+          ),
+        ],
+      ),
     );
   }
 }
