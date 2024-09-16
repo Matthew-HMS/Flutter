@@ -17,7 +17,8 @@ class ThemeProvider with ChangeNotifier {
   Color get pptBackgroundColor => _isDarkMode ? Color.fromARGB(255, 61, 61, 61) : Color.fromARGB(255, 219, 226, 239);
   Color get chatBackgroundColor => _isDarkMode ? Color.fromARGB(255, 48, 48, 48) : Color.fromARGB(255, 249, 247, 247);
   Color get chatMessageColor => _isDarkMode ? Color.fromARGB(255, 61, 61, 61) : Color.fromARGB(255, 63, 114, 175);
-  Color get chatPromptTextColor => _isDarkMode ? Colors.grey : Color.fromARGB(255, 249, 247, 247);
+  Color get chatPromptTextColor => _isDarkMode ? Colors.grey : Colors.grey;
+  Color get pptViewBackgroundColor => _isDarkMode ? Color.fromARGB(255, 61, 61, 61) : Color.fromARGB(255, 219, 226, 239);
 }
 
 

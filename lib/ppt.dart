@@ -5,30 +5,48 @@ import 'package:provider/provider.dart';
 import 'package:flutter/services.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:syncfusion_flutter_core/theme.dart';
 // import 'chat.dart';
 import 'api_prompt.dart' as ApiPrompt;
 import 'api_gpt.dart' as ApiGPT;
 import 'api_tts.dart' as ApiTTS;
-import 'api_gpt.dart' as ApiGPT;
 import 'personal.dart';
-
-// class CustomThemeProvider extends ThemeProvider {
-//   Color get primaryColor => isDarkMode ? Colors.red : Colors.blue; // 使用覆寫的 isDarkMode
-//   Color get secondaryColor => isDarkMode ? Colors.green : Colors.orange; // 你可以根據需要覆寫其他顏色
-// }
 
 // const Color backgroundColor = Color.fromARGB(255, 61, 61, 61);
 const Color primaryColor = Color.fromARGB(255, 48, 48, 48);
 const double textSize = 20.0;
-Map<int, List<Widget>> messagesByPage = {};
-List<Widget> messages = [];
+
+// Define the ChatMessageData class
+class ChatMessageData {
+  final String message;
+  final bool isSentByMe;
+  int? pptword_id;
+  int? pptword_page;
+  int? ppt_id;
+
+  ChatMessageData({
+    required this.message,
+    required this.isSentByMe,
+    this.pptword_id,
+    this.pptword_page,
+    this.ppt_id,
+  });
+}
+
+// Update the messages list to hold ChatMessageData objects
+List<ChatMessageData> messages = [];
 
 class PptPage extends StatefulWidget {
   final String filePath;
   final int pptId;
   final int userId;
 
-  const PptPage({Key? key, required this.filePath, required this.pptId, required this.userId}) : super(key: key);
+  const PptPage({
+    Key? key,
+    required this.filePath,
+    required this.pptId,
+    required this.userId,
+  }) : super(key: key);
 
   @override
   _PptPageState createState() => _PptPageState();
@@ -38,23 +56,24 @@ class _PptPageState extends State<PptPage> {
   final PdfViewerController _pdfViewerController = PdfViewerController();
   final ValueNotifier<int> _currentPageNumber = ValueNotifier<int>(1);
   final ValueNotifier<int> _totalPageNumber = ValueNotifier<int>(0);
-  final ScrollController _scrollController = ScrollController(); 
+  final ScrollController _scrollController = ScrollController();
   bool _isFullScreen = false;
   bool _isChatSidebarOpen = true;
-  bool _isChatSidebarFullScreen = false; 
+  bool _isChatSidebarFullScreen = false;
+
+  // Create a GlobalKey to access SlideView state
+  final GlobalKey<_SlideViewState> slideViewKey = GlobalKey<_SlideViewState>();
 
   void _scrollToBottom() {
-    // print("call _scrollToBottom");
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_scrollController.hasClients) {
-        // print(_scrollController.position.maxScrollExtent);
         _scrollController.animateTo(
           _scrollController.position.maxScrollExtent,
-          duration: Duration(milliseconds: 500), //add anime time
+          duration: Duration(milliseconds: 500), // Add animation time
           curve: Curves.easeOut,
         );
       }
-    });    
+    });
   }
 
   void _toggleFullScreen() {
@@ -75,6 +94,11 @@ class _PptPageState extends State<PptPage> {
     });
   }
 
+  void deleteChatMessage(int pptword_id, int pptword_page, int ppt_id) {
+    slideViewKey.currentState
+        ?.deleteChatMessage(pptword_id, pptword_page, ppt_id);
+  }
+
   Widget build(BuildContext context) {
     var themeProvider = Provider.of<ThemeProvider>(context);
     return Scaffold(
@@ -84,39 +108,41 @@ class _PptPageState extends State<PptPage> {
           Expanded(
             flex: 2,
             child: SlideView(
+              key: slideViewKey, // Pass the GlobalKey
               filePath: widget.filePath,
               pptId: widget.pptId,
               updateMessagesCallback: _updateMessages,
               pdfViewerController: _pdfViewerController,
               currentPageNumber: _currentPageNumber,
               totalPageNumber: _totalPageNumber,
-              scrollToBottomCallback: _scrollToBottom, 
+              scrollToBottomCallback: _scrollToBottom,
               scrollController: _scrollController,
-              toggleFullScreenCallback: _toggleFullScreen, // Pass the callback
-              isFullScreen: _isFullScreen, // Pass the fullscreen state
-              isChatSidebarOpen: _isChatSidebarOpen, // Pass the chat sidebar state
+              toggleFullScreenCallback: _toggleFullScreen,
+              isFullScreen: _isFullScreen,
+              isChatSidebarOpen: _isChatSidebarOpen,
               toggleChatSidebarCallback: _toggleChatSidebar,
-              userId: widget.userId
+              userId: widget.userId,
             ),
           ),
           if (_isChatSidebarOpen && !_isFullScreen)
-          Expanded(
-            flex: _isChatSidebarFullScreen ? 3 : 1,
-            child: ChatSidebar(
-              scrollToBottomCallback: _scrollToBottom,
-              scrollController: _scrollController,
-              toggleChatSidebarFullScreenCallback: _toggleChatSidebarFullScreen,
-              closeChatSidebarCallback: _toggleChatSidebar,
-              isFullScreen: _isChatSidebarFullScreen,
+            Expanded(
+              flex: _isChatSidebarFullScreen ? 3 : 1,
+              child: ChatSidebar(
+                scrollToBottomCallback: _scrollToBottom,
+                scrollController: _scrollController,
+                toggleChatSidebarFullScreenCallback:
+                    _toggleChatSidebarFullScreen,
+                closeChatSidebarCallback: _toggleChatSidebar,
+                isFullScreen: _isChatSidebarFullScreen,
+                deleteChatMessageCallback: deleteChatMessage, // Pass the callback
+              ),
             ),
-          ),
         ],
       ),
     );
   }
 
   void _updateMessages() {
-    // print("call _updateMessages");
     setState(() {});
     _scrollToBottom();
   }
@@ -129,14 +155,13 @@ class SlideView extends StatefulWidget {
   final PdfViewerController pdfViewerController;
   final ValueNotifier<int> currentPageNumber;
   final ValueNotifier<int> totalPageNumber;
-  final VoidCallback scrollToBottomCallback; 
+  final VoidCallback scrollToBottomCallback;
   final ScrollController scrollController;
   final VoidCallback toggleChatSidebarCallback;
-  final VoidCallback toggleFullScreenCallback; // Add this line
-  final bool isFullScreen; // Add this line
+  final VoidCallback toggleFullScreenCallback;
+  final bool isFullScreen;
   final bool isChatSidebarOpen;
   final int userId;
-
 
   const SlideView({
     Key? key,
@@ -146,14 +171,13 @@ class SlideView extends StatefulWidget {
     required this.pdfViewerController,
     required this.currentPageNumber,
     required this.totalPageNumber,
-    required this.scrollToBottomCallback, 
+    required this.scrollToBottomCallback,
     required this.scrollController,
-    // required this.toggleFullScreenCallback, // Add this line
-    required this.isFullScreen, // Add this line
-    required this.isChatSidebarOpen, // Add this linee
-    required this.toggleFullScreenCallback, // Add this line
+    required this.isFullScreen,
+    required this.isChatSidebarOpen,
+    required this.toggleFullScreenCallback,
     required this.toggleChatSidebarCallback,
-    required this.userId
+    required this.userId,
   }) : super(key: key);
 
   @override
@@ -164,7 +188,7 @@ class _SlideViewState extends State<SlideView> {
   final TextEditingController _controller = TextEditingController();
   GlobalKey _textFieldKey = GlobalKey();
   OverlayEntry? _overlayEntry;
-  List<Map<String, String>> _items  = [];
+  List<Map<String, String>> _items = [];
   List<Map<String, String>> _filteredItems = [];
   int _previousPageNumber = 1;
   bool _isSent = false;
@@ -173,44 +197,44 @@ class _SlideViewState extends State<SlideView> {
   void initState() {
     super.initState();
     _controller.addListener(_onTextChanged);
-    // Add a listener for the 'Esc' key
     HardwareKeyboard.instance.addHandler(_handleKeyEvent);
-    fetchPrompts(); // 加載 API 數據
+    fetchPrompts();
     fetchChat(widget.currentPageNumber.value, widget.pptId);
   }
 
   bool _handleKeyEvent(KeyEvent event) {
-    if (event is KeyDownEvent && event.logicalKey == LogicalKeyboardKey.escape) {
+    if (event is KeyDownEvent &&
+        event.logicalKey == LogicalKeyboardKey.escape) {
       if (widget.isFullScreen) {
         widget.toggleFullScreenCallback();
-        return true; // Indicate that the event was handled
+        return true;
       }
     }
-    return false; // Indicate that the event was not handled
+    return false;
   }
 
-  Future<void> fetchChat(int page, int ppt_id) async { //undo : undo 3 must call this function
-    // print("call fetch chat");
+  Future<void> fetchChat(int page, int ppt_id) async {
     try {
       messages.clear();
-      List<Map<String, dynamic>> jsonResponse = await ApiGPT.ApiService.fetchModels(page, ppt_id);
-      
-      if (jsonResponse.isEmpty) {      
-        messages.add(ChatMessage(
+      List<Map<String, dynamic>> jsonResponse =
+          await ApiGPT.ApiService.fetchModels(page, ppt_id);
+
+      if (jsonResponse.isEmpty) {
+        messages.add(ChatMessageData(
           message: "Hello, how can I help you?",
           isSentByMe: false,
         ));
       }
 
       for (var item in jsonResponse) {
-        messages.add(ChatMessage(
+        messages.add(ChatMessageData(
           message: item['pptword_question'],
           isSentByMe: true,
           pptword_id: item['pptword_id'],
           pptword_page: item['pptword_page'],
           ppt_id: item['ppt_ppt'],
         ));
-        messages.add(ChatMessage(
+        messages.add(ChatMessageData(
           message: item['pptword_content'],
           isSentByMe: false,
         ));
@@ -218,12 +242,9 @@ class _SlideViewState extends State<SlideView> {
 
       widget.updateMessagesCallback();
 
-      // delay to wait chat load finish
       Future.delayed(Duration(milliseconds: 500), () {
         widget.scrollToBottomCallback();
       });
-
-      // print("end call chat fetch");
     } catch (e) {
       print('Failed to load chat: $e');
     }
@@ -231,7 +252,8 @@ class _SlideViewState extends State<SlideView> {
 
   Future<void> fetchPrompts() async {
     try {
-      List<ApiPrompt.Prompt> prompts = await ApiPrompt.ApiService.fetchModels(widget.userId);
+      List<ApiPrompt.Prompt> prompts =
+          await ApiPrompt.ApiService.fetchModels(widget.userId);
       setState(() {
         _filteredItems = prompts.map((prompt) {
           return {
@@ -240,10 +262,21 @@ class _SlideViewState extends State<SlideView> {
             'id': prompt.prompt_id.toString(),
           };
         }).toList();
-        _items = _filteredItems; // 初始化 _items 為獲取到的數據
+        _items = _filteredItems;
       });
     } catch (e) {
       print('Failed to load prompts: $e');
+    }
+  }
+
+  void deleteChatMessage(int pptword_id, int pptword_page, int ppt_id) async {
+    try {
+      final response = await ApiGPT.ApiService.deleteChat(pptword_id);
+      if (response.statusCode == 204) {
+        await fetchChat(pptword_page, ppt_id);
+      }
+    } catch (e) {
+      print('Failed to delete message: $e');
     }
   }
 
@@ -256,13 +289,15 @@ class _SlideViewState extends State<SlideView> {
 
   void _onTextChanged() {
     final query = _controller.text.toLowerCase();
-    final queryAfterSlash = query.contains('/') ? query.split('/').last : query;
+    final queryAfterSlash =
+        query.contains('/') ? query.split('/').last : query;
 
     setState(() {
       _filteredItems = _items.where((item) {
         final title = item['title']!.toLowerCase();
         final description = item['description']!.toLowerCase();
-        return title.contains(queryAfterSlash) || description.contains(queryAfterSlash);
+        return title.contains(queryAfterSlash) ||
+            description.contains(queryAfterSlash);
       }).toList();
     });
     _toggleOverlay();
@@ -278,15 +313,20 @@ class _SlideViewState extends State<SlideView> {
     final screenHeight = MediaQuery.of(context).size.height;
     final appBarHeight = Scaffold.of(context).appBarMaxHeight ?? 0;
     final statusBarHeight = MediaQuery.of(context).padding.top;
-    final textFieldRenderBox = _textFieldKey.currentContext!.findRenderObject() as RenderBox;
+    final textFieldRenderBox =
+        _textFieldKey.currentContext!.findRenderObject() as RenderBox;
     final textFieldOffset = textFieldRenderBox.localToGlobal(Offset.zero);
     final textFieldHeight = textFieldRenderBox.size.height;
-    final availableSpaceAbove = textFieldOffset.dy - statusBarHeight - appBarHeight;
-    final availableSpaceBelow = screenHeight - textFieldOffset.dy - textFieldHeight;
+    final availableSpaceAbove =
+        textFieldOffset.dy - statusBarHeight - appBarHeight;
+    final availableSpaceBelow =
+        screenHeight - textFieldOffset.dy - textFieldHeight;
     const int maxVisibleItems = 6;
     final double listItemHeight = 65.0;
-    final double listHeight = min(_filteredItems.length * listItemHeight, maxVisibleItems * listItemHeight);
-    final bool shouldShowAbove = listHeight > availableSpaceBelow && listHeight < availableSpaceAbove;
+    final double listHeight =
+        min(_filteredItems.length * listItemHeight, maxVisibleItems * listItemHeight);
+    final bool shouldShowAbove =
+        listHeight > availableSpaceBelow && listHeight < availableSpaceAbove;
     double overlayTop;
     double overlayHeight;
 
@@ -326,15 +366,32 @@ class _SlideViewState extends State<SlideView> {
                             return Container(
                               color: Colors.transparent,
                               child: ListTile(
-                                title: Text(_filteredItems[index]['title']!, style: TextStyle(color: themeProvider.quaternaryColor, fontSize: textSize)),
-                                subtitle: Text(_filteredItems[index]['description']!, style: TextStyle(color: themeProvider.tertiaryColor, fontSize: textSize)),
+                                title: Text(
+                                  _filteredItems[index]['title']!,
+                                  style: TextStyle(
+                                      color: themeProvider.quaternaryColor,
+                                      fontSize: textSize),
+                                ),
+                                subtitle: Text(
+                                  _filteredItems[index]['description']!,
+                                  style: TextStyle(
+                                      color: themeProvider.tertiaryColor,
+                                      fontSize: textSize),
+                                ),
                                 onTap: () {
                                   setState(() {
                                     final text = _controller.text;
-                                    final lastSlashIndex = text.lastIndexOf('/');
-                                    final textBeforeLastSlash = lastSlashIndex != -1 ? text.substring(0, lastSlashIndex) : text;
-                                    _controller.text = "$textBeforeLastSlash${_filteredItems[index]['description']} ";
-                                    _controller.selection = TextSelection.fromPosition(TextPosition(offset: _controller.text.length));
+                                    final lastSlashIndex =
+                                        text.lastIndexOf('/');
+                                    final textBeforeLastSlash =
+                                        lastSlashIndex != -1
+                                            ? text.substring(0, lastSlashIndex)
+                                            : text;
+                                    _controller.text =
+                                        "$textBeforeLastSlash${_filteredItems[index]['description']} ";
+                                    _controller.selection =
+                                        TextSelection.fromPosition(TextPosition(
+                                            offset: _controller.text.length));
                                   });
                                   _removeOverlay();
                                 },
@@ -362,50 +419,47 @@ class _SlideViewState extends State<SlideView> {
   }
 
   void _sendMessage() async {
-    final String text = _controller.text;    
+    final String text = _controller.text;
     if (text.isNotEmpty) {
       setState(() {
-        // 先將用戶輸入的訊息加入 messages
-        messages.add(ChatMessage(message: text, isSentByMe: true));
-        print("send messages to chat ...");
-        _controller.clear();  // 清除輸入框
+        messages.add(ChatMessageData(
+          message: text,
+          isSentByMe: true,
+        ));
+        _controller.clear();
         _isSent = true;
-        _removeOverlay();     // 清除彈出層
-        // 更新消息回調
+        _removeOverlay();
         widget.updateMessagesCallback();
         widget.scrollToBottomCallback();
-
-        // fetchChat(widget.currentPageNumber.value, widget.pptId);
       });
 
       try {
-        // 使用 await 等待 sendMessage 完成，並獲取返回值
-        String returnText = await ApiGPT.ApiService.sendMessage(text, widget.currentPageNumber.value, widget.pptId);
-        
+        String returnText = await ApiGPT.ApiService.sendMessage(
+            text, widget.currentPageNumber.value, widget.pptId);
+
         setState(() {
-          // 將返回的訊息加入 messages
-          messages.add(ChatMessage(message: returnText, isSentByMe: false));
-          _isSent = false; // API 回應完成後重置動畫
+          messages.add(ChatMessageData(
+            message: returnText,
+            isSentByMe: false,
+          ));
+          _isSent = false;
         });
-        
-        // 更新消息回調
+
         widget.updateMessagesCallback();
       } catch (e) {
-        // 異常處理
         print('Error sending message: $e');
         setState(() {
-          _isSent = false; // 出錯後也要重置動畫
+          _isSent = false;
         });
-      }
-      finally {
+      } finally {
         fetchChat(widget.currentPageNumber.value, widget.pptId);
       }
     }
   }
 
-
   void _lightbulbPressed() {
-    _controller.selection = TextSelection.fromPosition(TextPosition(offset: _controller.text.length));
+    _controller.selection =
+        TextSelection.fromPosition(TextPosition(offset: _controller.text.length));
     _filteredItems = _items;
     _toggleOverlay();
   }
@@ -418,63 +472,59 @@ class _SlideViewState extends State<SlideView> {
         Row(
           children: [
             if (!widget.isFullScreen)
-            Expanded(
-              child: Container(
-                padding: EdgeInsets.all(10),
-                alignment: Alignment.centerLeft,
-                child: IconButton(
-                  icon: Icon(Icons.arrow_back, color: themeProvider.quaternaryColor, size: 30),
-                  onPressed: () => Navigator.of(context).pop(),
-                ),
-              ),
-            ),
-          // ),
-            if (!widget.isFullScreen && !widget.isChatSidebarOpen)
-            Expanded(
-              child: Container(
-                padding: EdgeInsets.all(10),
-                alignment: Alignment.centerRight,
-                child: IconButton(
-                  icon: Icon(Icons.chat, color: themeProvider.quaternaryColor, size: 30),
-                  onPressed: widget.toggleChatSidebarCallback,
-                ),
-              ),
-            ),
-          ],
-        ),
-
-        // PDF Viewer 與頁面切換按鈕
-        Expanded(
-          child: Row(
-            children: [
               Expanded(
                 child: Container(
-                  color: themeProvider.primaryColor,
-                  child: SfPdfViewer.file(
-                    File(widget.filePath),
-                    controller: widget.pdfViewerController,
-                    pageLayoutMode: PdfPageLayoutMode.single,
-                    onPageChanged: (PdfPageChangedDetails details) {
-                      // 更新頁碼
-                      if (details.newPageNumber > _previousPageNumber) {
-                        fetchChat(details.newPageNumber, widget.pptId);
-                      } else if (details.newPageNumber < _previousPageNumber) {
-                        fetchChat(details.newPageNumber, widget.pptId);
-                      }
-                      _previousPageNumber = details.newPageNumber;
-                      widget.currentPageNumber.value = details.newPageNumber;
-                    },
-                    onDocumentLoaded: (PdfDocumentLoadedDetails details) {
-                      widget.totalPageNumber.value = details.document.pages.count;
-                    },
+                  padding: EdgeInsets.all(10),
+                  alignment: Alignment.centerLeft,
+                  child: IconButton(
+                    icon: Icon(Icons.arrow_back,
+                        color: themeProvider.quaternaryColor, size: 30),
+                    onPressed: () => Navigator.of(context).pop(),
                   ),
                 ),
               ),
-            ],
+            if (!widget.isFullScreen && !widget.isChatSidebarOpen)
+              Expanded(
+                child: Container(
+                  padding: EdgeInsets.all(10),
+                  alignment: Alignment.centerRight,
+                  child: IconButton(
+                    icon: Icon(Icons.chat,
+                        color: themeProvider.quaternaryColor, size: 30),
+                    onPressed: widget.toggleChatSidebarCallback,
+                  ),
+                ),
+              ),
+          ],
+        ),
+        Expanded(
+          child: Container(
+            // color: themeProvider.primaryColor,
+            child: SfPdfViewerTheme(
+              data: SfPdfViewerThemeData(
+                backgroundColor: themeProvider.pptViewBackgroundColor, // 您可以使用任何您需要的颜色
+              ),
+              child: SfPdfViewer.file(
+                File(widget.filePath),
+                controller: widget.pdfViewerController,
+                pageLayoutMode: PdfPageLayoutMode.single,
+                onPageChanged: (PdfPageChangedDetails details) {
+                  // 更新页码
+                  if (details.newPageNumber > _previousPageNumber) {
+                    fetchChat(details.newPageNumber, widget.pptId);
+                  } else if (details.newPageNumber < _previousPageNumber) {
+                    fetchChat(details.newPageNumber, widget.pptId);
+                  }
+                  _previousPageNumber = details.newPageNumber;
+                  widget.currentPageNumber.value = details.newPageNumber;
+                },
+                onDocumentLoaded: (PdfDocumentLoadedDetails details) {
+                  widget.totalPageNumber.value = details.document.pages.count;
+                },
+              ),
+            ),
           ),
         ),
-
-        // 如果不是全螢幕，顯示頁碼與全螢幕按鈕
         if (!widget.isFullScreen)
           Padding(
             padding: const EdgeInsets.all(8.0),
@@ -482,7 +532,8 @@ class _SlideViewState extends State<SlideView> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
                 IconButton(
-                  icon: Icon(Icons.arrow_back, color: themeProvider.quaternaryColor),
+                  icon: Icon(Icons.arrow_back,
+                      color: themeProvider.quaternaryColor),
                   onPressed: () {
                     widget.pdfViewerController.previousPage();
                   },
@@ -497,14 +548,18 @@ class _SlideViewState extends State<SlideView> {
                           children: [
                             Text(
                               '$currentPage / $totalPage',
-                              style: TextStyle(fontSize: textSize, color: themeProvider.tertiaryColor),
+                              style: TextStyle(
+                                  fontSize: textSize,
+                                  color: themeProvider.quaternaryColor),
                             ),
                             IconButton(
-                              icon: Icon(Icons.fullscreen, color: themeProvider.quaternaryColor),
+                              icon: Icon(Icons.fullscreen,
+                                  color: themeProvider.quaternaryColor),
                               onPressed: () {
                                 widget.toggleFullScreenCallback();
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Esc鍵可退出全螢幕')),
+                                  const SnackBar(
+                                      content: Text('Press Esc to exit fullscreen')),
                                 );
                               },
                             ),
@@ -515,7 +570,8 @@ class _SlideViewState extends State<SlideView> {
                   },
                 ),
                 IconButton(
-                  icon: Icon(Icons.arrow_forward, color: themeProvider.quaternaryColor),
+                  icon: Icon(Icons.arrow_forward,
+                      color: themeProvider.quaternaryColor),
                   onPressed: () {
                     widget.pdfViewerController.nextPage();
                   },
@@ -523,8 +579,6 @@ class _SlideViewState extends State<SlideView> {
               ],
             ),
           ),
-
-        // 如果不是全螢幕，顯示文字輸入框與發送按鈕
         if (!widget.isFullScreen)
           Padding(
             padding: const EdgeInsets.all(8.0),
@@ -536,12 +590,16 @@ class _SlideViewState extends State<SlideView> {
                     controller: _controller,
                     decoration: InputDecoration(
                       hintText: "Type '/' to search prompts",
-                      hintStyle: TextStyle(color: themeProvider.chatPromptTextColor, fontSize: textSize),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
+                      hintStyle: TextStyle(
+                          color: themeProvider.chatPromptTextColor,
+                          fontSize: textSize),
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(15)),
                       prefixIcon: Padding(
                         padding: EdgeInsets.only(left: 8.0),
                         child: IconButton(
-                          icon: Icon(FontAwesomeIcons.lightbulb, size: 25.0, color: themeProvider.quaternaryColor),
+                          icon: Icon(FontAwesomeIcons.lightbulb,
+                              size: 25.0, color: themeProvider.quaternaryColor),
                           onPressed: _lightbulbPressed,
                         ),
                       ),
@@ -551,17 +609,26 @@ class _SlideViewState extends State<SlideView> {
                           onTap: _sendMessage,
                           child: AnimatedSwitcher(
                             duration: Duration(milliseconds: 300),
-                            transitionBuilder: (Widget child, Animation<double> animation) {
-                              return ScaleTransition(child: child, scale: animation);
+                            transitionBuilder:
+                                (Widget child, Animation<double> animation) {
+                              return ScaleTransition(
+                                  child: child, scale: animation);
                             },
                             child: _isSent
-                                ? Icon(Icons.check_circle, key: ValueKey<int>(1), size: 20.0, color: themeProvider.quaternaryColor)
-                                : Icon(FontAwesomeIcons.paperPlane, key: ValueKey<int>(0), size: 20.0, color: themeProvider.quaternaryColor),
+                                ? Icon(Icons.check_circle,
+                                    key: ValueKey<int>(1),
+                                    size: 20.0,
+                                    color: themeProvider.quaternaryColor)
+                                : Icon(FontAwesomeIcons.paperPlane,
+                                    key: ValueKey<int>(0),
+                                    size: 20.0,
+                                    color: themeProvider.quaternaryColor),
                           ),
                         ),
                       ),
                     ),
-                    style: TextStyle(color: themeProvider.tertiaryColor, fontSize: textSize),
+                    style: TextStyle(
+                        color: themeProvider.tertiaryColor, fontSize: textSize),
                     onSubmitted: (value) {
                       _sendMessage();
                     },
@@ -573,25 +640,24 @@ class _SlideViewState extends State<SlideView> {
       ],
     );
   }
-
 }
 
 class ChatSidebar extends StatefulWidget {
-  // 0902
-  final VoidCallback scrollToBottomCallback; // Step 1: Add callback
+  final VoidCallback scrollToBottomCallback;
   final ScrollController scrollController;
-  final VoidCallback toggleChatSidebarFullScreenCallback; // Add this line
-  final VoidCallback closeChatSidebarCallback; // Add this line
-  final bool isFullScreen; // Add this line
-  
-  // ChatSidebar({required this.scrollToBottomCallback, required this.scrollController});
-  //
+  final VoidCallback toggleChatSidebarFullScreenCallback;
+  final VoidCallback closeChatSidebarCallback;
+  final bool isFullScreen;
+  final Function(int pptword_id, int pptword_page, int ppt_id)
+      deleteChatMessageCallback;
+
   ChatSidebar({
     required this.scrollToBottomCallback,
     required this.scrollController,
-    required this.toggleChatSidebarFullScreenCallback, // Add this line
-    required this.closeChatSidebarCallback, // Add this line
-    required this.isFullScreen, // Add this line
+    required this.toggleChatSidebarFullScreenCallback,
+    required this.closeChatSidebarCallback,
+    required this.isFullScreen,
+    required this.deleteChatMessageCallback,
   });
 
   _ChatSidebarState createState() => _ChatSidebarState();
@@ -602,14 +668,13 @@ class _ChatSidebarState extends State<ChatSidebar> {
     setState(() {
       messages.clear();
       messages = [
-        ChatMessage(
+        ChatMessageData(
           message: "Hello, how can I help you?",
           isSentByMe: false,
         ),
       ];
     });
   }
-  
 
   @override
   Widget build(BuildContext context) {
@@ -639,10 +704,12 @@ class _ChatSidebarState extends State<ChatSidebar> {
                           children: [
                             IconButton(
                               icon: Icon(
-                                widget.isFullScreen ? Icons.fullscreen_exit : Icons.fullscreen, 
-                                color: themeProvider.quaternaryColor
-                              ),
-                              onPressed: widget.toggleChatSidebarFullScreenCallback,
+                                  widget.isFullScreen
+                                      ? Icons.fullscreen_exit
+                                      : Icons.fullscreen,
+                                  color: themeProvider.quaternaryColor),
+                              onPressed:
+                                  widget.toggleChatSidebarFullScreenCallback,
                             ),
                             Expanded(
                               child: Center(
@@ -657,11 +724,14 @@ class _ChatSidebarState extends State<ChatSidebar> {
                               ),
                             ),
                             IconButton(
-                              icon: Icon(Icons.add_comment_outlined, color: themeProvider.quaternaryColor, size: 20),
-                              onPressed: _resetConversation, //undo
+                              icon: Icon(Icons.add_comment_outlined,
+                                  color: themeProvider.quaternaryColor,
+                                  size: 20),
+                              onPressed: _resetConversation,
                             ),
                             IconButton(
-                              icon: Icon(Icons.close, color: themeProvider.quaternaryColor),
+                              icon: Icon(Icons.close,
+                                  color: themeProvider.quaternaryColor),
                               onPressed: widget.closeChatSidebarCallback,
                             ),
                           ],
@@ -676,7 +746,18 @@ class _ChatSidebarState extends State<ChatSidebar> {
                           controller: widget.scrollController,
                           padding: EdgeInsets.all(10),
                           itemCount: messages.length,
-                          itemBuilder: (context, index) => messages[index],
+                          itemBuilder: (context, index) {
+                            final messageData = messages[index];
+                            return ChatMessage(
+                              message: messageData.message,
+                              isSentByMe: messageData.isSentByMe,
+                              pptword_id: messageData.pptword_id,
+                              pptword_page: messageData.pptword_page,
+                              ppt_id: messageData.ppt_id,
+                              onDeleteMessage:
+                                  widget.deleteChatMessageCallback,
+                            );
+                          },
                         ),
                       ),
                     ],
@@ -684,8 +765,6 @@ class _ChatSidebarState extends State<ChatSidebar> {
                 ),
               ),
             ),
-        //   ],
-        // ),
           ),
         ],
       ),
@@ -699,8 +778,16 @@ class ChatMessage extends StatefulWidget {
   int? pptword_id;
   int? pptword_page;
   int? ppt_id;
+  final Function(int pptword_id, int pptword_page, int ppt_id)? onDeleteMessage;
 
-  ChatMessage({required this.message, required this.isSentByMe, this.pptword_id, this.pptword_page, this.ppt_id});
+  ChatMessage({
+    required this.message,
+    required this.isSentByMe,
+    this.pptword_id,
+    this.pptword_page,
+    this.ppt_id,
+    this.onDeleteMessage,
+  });
 
   @override
   _ChatMessageState createState() => _ChatMessageState();
@@ -714,24 +801,10 @@ class _ChatMessageState extends State<ChatMessage> {
     super.initState();
     ApiTTS.GptTTS.setAudioCompleteCallback(() {
       setState(() {
-        isPlayingAudio = false; // 更新狀態為停止
+        isPlayingAudio = false;
       });
     });
   }
-
-  // void deleteChatMessage(int pptword_id, int pptword_page, int ppt_id) async {
-  //   try {
-  //     final response = await ApiGPT.ApiService.deleteChat(pptword_id);
-  //     if (response.statusCode == 204) {
-  //       fetchChat(pptword_page,ppt_id);
-  //     }           
-  //   } catch (e) {
-  //     print('Failed to delete PptFile: $e');
-  //   }
-  //   finally{
-  //     fetchChat();
-  //   }
-  // }
 
   void _playAudio() {
     setState(() {
@@ -739,17 +812,19 @@ class _ChatMessageState extends State<ChatMessage> {
     });
 
     ApiTTS.GptTTS.playAudio('audio_url', onComplete: () {
-      // 當音頻播放完成時，更新 UI 狀態
       setState(() {
         isPlayingAudio = false;
       });
     });
   }
 
-  void _handleSelectionChange(TextSelection selection, SelectionChangedCause? cause) {
-    if (cause == SelectionChangedCause.longPress || cause == SelectionChangedCause.drag) {
+  void _handleSelectionChange(
+      TextSelection selection, SelectionChangedCause? cause) {
+    if (cause == SelectionChangedCause.longPress ||
+        cause == SelectionChangedCause.drag) {
       setState(() {
-        selectedText = widget.message.substring(selection.start, selection.end);
+        selectedText =
+            widget.message.substring(selection.start, selection.end);
       });
     }
   }
@@ -761,24 +836,14 @@ class _ChatMessageState extends State<ChatMessage> {
       margin: EdgeInsets.symmetric(vertical: 10),
       padding: EdgeInsets.all(10),
       decoration: BoxDecoration(
-        // color: widget.isSentByMe ? backgroundColor : Color.fromARGB(255, 80, 80, 80),
         color: themeProvider.chatMessageColor,
         borderRadius: BorderRadius.circular(15),
       ),
       child: SelectableText(
         widget.message,
-        style: TextStyle(
-          fontSize: 16, 
-          color: Color.fromARGB(255, 249, 247, 247)
-        ),
+        style: TextStyle(fontSize: 16, color: Colors.white),
         onSelectionChanged: _handleSelectionChange,
       ),
-      // child: MarkdownBody(
-      //   data: widget.message,
-      //   styleSheet: MarkdownStyleSheet(
-      //     p: TextStyle(fontSize: 16, color: Colors.white),
-      //   ),
-      // ),
     );
 
     if (!widget.isSentByMe) {
@@ -793,18 +858,16 @@ class _ChatMessageState extends State<ChatMessage> {
             ),
             IconButton(
               icon: Icon(
-                // ApiTTS.GptTTS.isPlayingAudio() ? Icons.stop : Icons.volume_up_rounded, // 更新圖標根據播放狀態
                 isPlayingAudio ? Icons.stop : Icons.volume_up_rounded,
                 size: 20,
                 color: themeProvider.quaternaryColor,
               ),
               onPressed: () async {
                 if (isPlayingAudio) {
-                  // stop playing audio 
                   await ApiTTS.GptTTS.stopAudio();
                   selectedText = "";
                   setState(() {
-                    isPlayingAudio = false; 
+                    isPlayingAudio = false;
                   });
                 } else {
                   setState(() {
@@ -813,10 +876,8 @@ class _ChatMessageState extends State<ChatMessage> {
 
                   if (selectedText.isNotEmpty) {
                     await ApiTTS.GptTTS.streamedAudio(selectedText);
-                    print("start playing selected audio");
                   } else {
                     await ApiTTS.GptTTS.streamedAudio(widget.message);
-                    print("start playing all audio");
                   }
                   selectedText = "";
                 }
@@ -827,19 +888,29 @@ class _ChatMessageState extends State<ChatMessage> {
       );
     }
 
-    
     return Align(
-      alignment: widget.isSentByMe ? Alignment.centerRight : Alignment.centerLeft,
-      // child: messageWidget,
+      alignment:
+          widget.isSentByMe ? Alignment.centerRight : Alignment.centerLeft,
       child: Row(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           IconButton(
-            icon: Icon(Icons.delete, size: 20, color: themeProvider.quaternaryColor),
+            icon: Icon(Icons.delete,
+                size: 20, color: themeProvider.quaternaryColor),
             onPressed: () {
-              // undo 3
-              print('delete message: ${widget.pptword_id}, page: ${widget.pptword_page}, ppt_id: ${widget.ppt_id}');
+              if (widget.onDeleteMessage != null &&
+                  widget.pptword_id != null &&
+                  widget.pptword_page != null &&
+                  widget.ppt_id != null) {
+                widget.onDeleteMessage!(
+                  widget.pptword_id!,
+                  widget.pptword_page!,
+                  widget.ppt_id!,
+                );
+              } else {
+                print('Cannot delete message: missing ids');
+              }
             },
           ),
           Flexible(
