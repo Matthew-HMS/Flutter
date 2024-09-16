@@ -189,7 +189,7 @@ class _SlideViewState extends State<SlideView> {
     return false; // Indicate that the event was not handled
   }
 
-  Future<void> fetchChat(int page, int ppt_id) async {
+  Future<void> fetchChat(int page, int ppt_id) async { //undo : undo 3 must call this function
     // print("call fetch chat");
     try {
       messages.clear();
@@ -658,7 +658,7 @@ class _ChatSidebarState extends State<ChatSidebar> {
                             ),
                             IconButton(
                               icon: Icon(Icons.add_comment_outlined, color: themeProvider.quaternaryColor, size: 20),
-                              onPressed: _resetConversation,
+                              onPressed: _resetConversation, //undo
                             ),
                             IconButton(
                               icon: Icon(Icons.close, color: themeProvider.quaternaryColor),
@@ -838,7 +838,7 @@ class _ChatMessageState extends State<ChatMessage> {
           IconButton(
             icon: Icon(Icons.delete, size: 20, color: themeProvider.quaternaryColor),
             onPressed: () {
-              // Print the selected text when the volume_up button is clicked
+              // undo 3
               print('delete message: ${widget.pptword_id}, page: ${widget.pptword_page}, ppt_id: ${widget.ppt_id}');
             },
           ),
