@@ -61,5 +61,25 @@ class ApiService {
     }
   }
 
+  static Future<http.Response> deleteChatByPage(int pptword_page, int ppt_id) async {
+    print("delete pptword ...");
+    final response = await http.delete(
+      Uri.parse(baseUrl + "gpt/"),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(<String, String>{
+        'pptword_id': pptword_page.toString(),        
+      }),
+    );
+
+    if (response.statusCode == 204) {
+      // print(response.body);
+      return response;
+    } else {
+      throw Exception('Failed to delete file');
+    }
+  }
+
 }
 

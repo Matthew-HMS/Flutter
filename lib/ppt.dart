@@ -280,6 +280,17 @@ class _SlideViewState extends State<SlideView> {
     }
   }
 
+  void deletePageChatMessage(int pptword_page, int ppt_id) async {
+    // try {
+    //   final response = await ApiGPT.ApiService.deleteChatByPage(pptword_page, ppt_id);
+    //   if (response.statusCode == 204) {
+    //     await fetchChat(pptword_page, ppt_id);
+    //   }
+    // } catch (e) {
+    //   print('Failed to delete message: $e');
+    // }
+  }
+
   @override
   void dispose() {
     _controller.removeListener(_onTextChanged);
@@ -723,7 +734,7 @@ class _ChatSidebarState extends State<ChatSidebar> {
                                 ),
                               ),
                             ),
-                            IconButton(
+                            IconButton( // undo
                               icon: Icon(Icons.add_comment_outlined,
                                   color: themeProvider.quaternaryColor,
                                   size: 20),
@@ -754,8 +765,7 @@ class _ChatSidebarState extends State<ChatSidebar> {
                               pptword_id: messageData.pptword_id,
                               pptword_page: messageData.pptword_page,
                               ppt_id: messageData.ppt_id,
-                              onDeleteMessage:
-                                  widget.deleteChatMessageCallback,
+                              onDeleteMessage: widget.deleteChatMessageCallback,
                             );
                           },
                         ),
