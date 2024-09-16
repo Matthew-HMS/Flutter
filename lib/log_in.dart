@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'api_user.dart';
+import 'personal.dart';
 import 'dart:convert';
-
-const backgroundColor = Color.fromARGB(255, 61, 61, 61);
 
 class LogInPage extends StatefulWidget {
   @override
@@ -51,19 +51,20 @@ class _LoginPageState extends State<LogInPage> {
 
   @override
   Widget build(BuildContext context) {
+    var themeProvider = Provider.of<ThemeProvider>(context, listen: false);
     return Scaffold(
-      backgroundColor: backgroundColor,
+      backgroundColor: themeProvider.primaryColor,
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              const Text(
+              Text(
                 'EMI課程助教',
                 style: TextStyle(
                   fontSize: 40,
-                  color: Colors.white,
+                  color: themeProvider.tertiaryColor,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -72,18 +73,18 @@ class _LoginPageState extends State<LogInPage> {
                 width: 400,
                 child: TextField(
                   controller: _emailController,
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     labelText: '電子郵件',
-                    labelStyle: TextStyle(color: Colors.white),
+                    labelStyle: TextStyle(color: themeProvider.tertiaryColor),
                     border: OutlineInputBorder(),
                     enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.white),
+                      borderSide: BorderSide(color: themeProvider.quaternaryColor),
                     ),
                     focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.white),
+                      borderSide: BorderSide(color: themeProvider.quaternaryColor),
                     ),
                   ),
-                  style: const TextStyle(color: Colors.white),
+                  style: TextStyle(color: themeProvider.tertiaryColor),
                   keyboardType: TextInputType.emailAddress,
                 ),
               ),
@@ -94,18 +95,18 @@ class _LoginPageState extends State<LogInPage> {
                   controller: _passwordController,
                   decoration: InputDecoration(
                     labelText: '密碼',
-                    labelStyle: TextStyle(color: Colors.white),
+                    labelStyle: TextStyle(color: themeProvider.tertiaryColor),
                     border: OutlineInputBorder(),
                     enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.white),
+                      borderSide: BorderSide(color: themeProvider.quaternaryColor),
                     ),
                     focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.white),
+                      borderSide: BorderSide(color: themeProvider.quaternaryColor),
                     ),
                     suffixIcon: IconButton(
                       icon: Icon(
                         _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
-                        color: Colors.white,
+                        color: themeProvider.quaternaryColor,
                       ),
                       onPressed: () {
                         setState(() {
@@ -114,7 +115,7 @@ class _LoginPageState extends State<LogInPage> {
                       },
                     ),
                   ),
-                  style: const TextStyle(color: Colors.white),
+                  style: TextStyle(color: themeProvider.tertiaryColor),
                   obscureText: !_isPasswordVisible,
                 ),
               ),
@@ -122,8 +123,8 @@ class _LoginPageState extends State<LogInPage> {
               TextButton(
                 onPressed: _login, //登入後端
                 style: TextButton.styleFrom(
-                  foregroundColor: backgroundColor, 
-                  backgroundColor: Colors.white,
+                  foregroundColor: themeProvider.primaryColor, 
+                  backgroundColor: themeProvider.tertiaryColor,
                   padding: const EdgeInsets.symmetric(horizontal: 178.0, vertical: 16.0), 
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8.0), // Custom border radius
@@ -131,37 +132,16 @@ class _LoginPageState extends State<LogInPage> {
                 ),
                 child: const Text(
                   '登入',
-                  style: TextStyle(fontSize: 20.0), // Increase the font size
+                  style: TextStyle(fontSize: 20.0, color: Color.fromARGB(255, 249, 247, 247)), // Increase the font size
                 ),
               ),
-              // SizedBox(height: 10.0),
-              // const Text(
-              //   '或',
-              //   style: TextStyle(color: Colors.white),
-              // ),
-              // SizedBox(height: 10.0),
-              // TextButton(
-              //   onPressed: () {},
-              //   style: TextButton.styleFrom(
-              //     foregroundColor: backgroundColor, 
-              //     backgroundColor: Colors.white,
-              //     padding: const EdgeInsets.symmetric(horizontal: 120.0, vertical: 16.0), 
-              //     shape: RoundedRectangleBorder(
-              //       borderRadius: BorderRadius.circular(8.0), // Custom border radius
-              //     ),
-              //   ),
-              //   child: const Text(
-              //     'Google帳號登入',
-              //     style: TextStyle(fontSize: 20.0), // Increase the font size
-              //   ),
-              // ),
               const SizedBox(height: 20),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text(
+                  Text(
                     '沒有帳號嗎?',
-                    style: TextStyle(color: Colors.white),
+                    style: TextStyle(color: themeProvider.quaternaryColor),
                   ),
                   TextButton(
                     onPressed: () {

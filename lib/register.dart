@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'api_user.dart';
+import 'personal.dart';
 import 'dart:convert';
-
-const backgroundColor = Color.fromARGB(255, 61, 61, 61);
 
 class RegisterPage extends StatefulWidget {
   @override
@@ -64,19 +64,20 @@ class _RegisterPageState extends State<RegisterPage> {
 
   @override
   Widget build(BuildContext context) {
+    var themeProvider = Provider.of<ThemeProvider>(context, listen: false);
     return Scaffold(
-      backgroundColor: backgroundColor,
+      backgroundColor: themeProvider.primaryColor,
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              const Text(
+              Text(
                 '會員註冊',
                 style: TextStyle(
                   fontSize: 32,
-                  color: Colors.white,
+                  color: themeProvider.tertiaryColor,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -85,18 +86,18 @@ class _RegisterPageState extends State<RegisterPage> {
                 width: 400,
                 child: TextField(
                   controller: _nameController,
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     labelText: '姓名',
-                    labelStyle: TextStyle(color: Colors.white),
+                    labelStyle: TextStyle(color: themeProvider.tertiaryColor),
                     border: OutlineInputBorder(),
                     enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.white),
+                      borderSide: BorderSide(color: themeProvider.quaternaryColor),
                     ),
                     focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.white),
+                      borderSide: BorderSide(color: themeProvider.quaternaryColor),
                     ),
                   ),
-                  style: const TextStyle(color: Colors.white),
+                  style: TextStyle(color: themeProvider.tertiaryColor),
                 ),
               ),
               const SizedBox(height: 20),
@@ -104,18 +105,18 @@ class _RegisterPageState extends State<RegisterPage> {
                 width: 400,
                 child: TextField(
                   controller: _emailController,
-                  decoration: const InputDecoration(
+                  decoration:  InputDecoration(
                     labelText: '電子郵件',
-                    labelStyle: TextStyle(color: Colors.white),
+                    labelStyle: TextStyle(color: themeProvider.tertiaryColor),
                     border: OutlineInputBorder(),
                     enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.white),
+                      borderSide: BorderSide(color: themeProvider.quaternaryColor),
                     ),
                     focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.white),
+                      borderSide: BorderSide(color: themeProvider.quaternaryColor),
                     ),
                   ),
-                  style: const TextStyle(color: Colors.white),
+                  style: TextStyle(color: themeProvider.tertiaryColor),
                   keyboardType: TextInputType.emailAddress,
                 ),
               ),
@@ -126,18 +127,18 @@ class _RegisterPageState extends State<RegisterPage> {
                   controller: _passwordController,
                   decoration: InputDecoration(
                     labelText: '密碼',
-                    labelStyle: const TextStyle(color: Colors.white),
+                    labelStyle:  TextStyle(color: themeProvider.tertiaryColor),
                     border: const OutlineInputBorder(),
-                    enabledBorder: const OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.white),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: themeProvider.quaternaryColor),
                     ),
-                    focusedBorder: const OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.white),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: themeProvider.quaternaryColor),
                     ),
                     suffixIcon: IconButton(
                       icon: Icon(
                         _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
-                        color: Colors.white,
+                        color: themeProvider.quaternaryColor,
                       ),
                       onPressed: () {
                         setState(() {
@@ -146,7 +147,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       },
                     ),
                   ),
-                  style: const TextStyle(color: Colors.white),
+                  style: TextStyle(color: themeProvider.tertiaryColor),
                   obscureText: !_isPasswordVisible,
                 ),
               ),
@@ -157,18 +158,18 @@ class _RegisterPageState extends State<RegisterPage> {
                   controller: _confirmPasswordController,
                   decoration: InputDecoration(
                     labelText: '確認密碼',
-                    labelStyle: const TextStyle(color: Colors.white),
+                    labelStyle: TextStyle(color: themeProvider.tertiaryColor),
                     border: const OutlineInputBorder(),
-                    enabledBorder: const OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.white),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: themeProvider.quaternaryColor),
                     ),
-                    focusedBorder: const OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.white),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: themeProvider.quaternaryColor),
                     ),
                     suffixIcon: IconButton(
                       icon: Icon(
                         _isConfirmPasswordVisible ? Icons.visibility : Icons.visibility_off,
-                        color: Colors.white,
+                        color: themeProvider.quaternaryColor,
                       ),
                       onPressed: () {
                         setState(() {
@@ -177,7 +178,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       },
                     ),
                   ),
-                  style: const TextStyle(color: Colors.white),
+                  style: TextStyle(color: themeProvider.tertiaryColor),
                   obscureText: !_isConfirmPasswordVisible,
                 ),
               ),
@@ -185,8 +186,8 @@ class _RegisterPageState extends State<RegisterPage> {
               TextButton(
                 onPressed: _register,
                 style: TextButton.styleFrom(
-                  foregroundColor: backgroundColor, 
-                  backgroundColor: Colors.white,
+                  foregroundColor: themeProvider.primaryColor, 
+                  backgroundColor: themeProvider.tertiaryColor,
                   padding: const EdgeInsets.symmetric(horizontal: 178.0, vertical: 16.0), 
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8.0), // Custom border radius
@@ -201,9 +202,9 @@ class _RegisterPageState extends State<RegisterPage> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text(
+                  Text(
                     '已經有帳號？',
-                    style: TextStyle(color: Colors.white),
+                    style: TextStyle(color: themeProvider.quaternaryColor),
                   ),
                   TextButton(
                     onPressed: () {
