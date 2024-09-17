@@ -42,7 +42,7 @@ class ApiService {
   }
 
   static Future<http.Response> deleteChat(int pptword_id) async {
-    print("delete pptword ...");
+    print("delete pptword by id ...");
     final response = await http.delete(
       Uri.parse(baseUrl + "gpt/"),
       headers: <String, String>{
@@ -57,19 +57,20 @@ class ApiService {
       // print(response.body);
       return response;
     } else {
-      throw Exception('Failed to delete file');
+      throw Exception('Failed to delete chat');
     }
   }
 
   static Future<http.Response> deleteChatByPage(int pptword_page, int ppt_id) async {
-    print("delete pptword ...");
+    print("delete pptword by page ...");
     final response = await http.delete(
       Uri.parse(baseUrl + "gpt/"),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
       body: jsonEncode(<String, String>{
-        'pptword_id': pptword_page.toString(),        
+        'pptword_page': pptword_page.toString(),
+        'ppt_id': ppt_id.toString(),        
       }),
     );
 
@@ -77,7 +78,7 @@ class ApiService {
       // print(response.body);
       return response;
     } else {
-      throw Exception('Failed to delete file');
+      throw Exception('Failed to delete chat');
     }
   }
 

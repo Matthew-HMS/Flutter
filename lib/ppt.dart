@@ -99,6 +99,10 @@ class _PptPageState extends State<PptPage> {
         ?.deleteChatMessage(pptword_id, pptword_page, ppt_id);
   }
 
+  void deletePageChatMessage(int pptword_page, int ppt_id) {
+    slideViewKey.currentState?.deletePageChatMessage(pptword_page, ppt_id);
+  }
+
   Widget build(BuildContext context) {
     var themeProvider = Provider.of<ThemeProvider>(context);
     return Scaffold(
@@ -130,11 +134,13 @@ class _PptPageState extends State<PptPage> {
               child: ChatSidebar(
                 scrollToBottomCallback: _scrollToBottom,
                 scrollController: _scrollController,
-                toggleChatSidebarFullScreenCallback:
-                    _toggleChatSidebarFullScreen,
+                toggleChatSidebarFullScreenCallback: _toggleChatSidebarFullScreen,
                 closeChatSidebarCallback: _toggleChatSidebar,
                 isFullScreen: _isChatSidebarFullScreen,
-                deleteChatMessageCallback: deleteChatMessage, // Pass the callback
+                deleteChatMessageCallback: deleteChatMessage,
+                deletePageChatMessageCallback: deletePageChatMessage, // 添加这一行
+                currentPageNumber: _currentPageNumber, // 传递当前页码
+                pptId: widget.pptId, // 传递 pptId
               ),
             ),
         ],
@@ -280,15 +286,15 @@ class _SlideViewState extends State<SlideView> {
     }
   }
 
-  void deletePageChatMessage(int pptword_page, int ppt_id) async {
-    // try {
-    //   final response = await ApiGPT.ApiService.deleteChatByPage(pptword_page, ppt_id);
-    //   if (response.statusCode == 204) {
-    //     await fetchChat(pptword_page, ppt_id);
-    //   }
-    // } catch (e) {
-    //   print('Failed to delete message: $e');
-    // }
+  void deletePageChatMessage(int pptword_page, int ppt_id) async { //undo
+    try {
+      final response = await ApiGPT.ApiService.deleteChatByPage(pptword_page, ppt_id);
+      if (response.statusCode == 204) {
+        await fetchChat(pptword_page, ppt_id);
+      }
+    } catch (e) {
+      print('Failed to delete message: $e');
+    }
   }
 
   @override
@@ -659,8 +665,10 @@ class ChatSidebar extends StatefulWidget {
   final VoidCallback toggleChatSidebarFullScreenCallback;
   final VoidCallback closeChatSidebarCallback;
   final bool isFullScreen;
-  final Function(int pptword_id, int pptword_page, int ppt_id)
-      deleteChatMessageCallback;
+  final Function(int pptword_id, int pptword_page, int ppt_id)  deleteChatMessageCallback;
+  final Function(int pptword_page, int ppt_id) deletePageChatMessageCallback;
+  final ValueNotifier<int> currentPageNumber;
+  final int pptId;
 
   ChatSidebar({
     required this.scrollToBottomCallback,
@@ -669,6 +677,9 @@ class ChatSidebar extends StatefulWidget {
     required this.closeChatSidebarCallback,
     required this.isFullScreen,
     required this.deleteChatMessageCallback,
+    required this.deletePageChatMessageCallback,
+    required this.currentPageNumber,
+    required this.pptId,
   });
 
   _ChatSidebarState createState() => _ChatSidebarState();
@@ -738,7 +749,12 @@ class _ChatSidebarState extends State<ChatSidebar> {
                               icon: Icon(Icons.add_comment_outlined,
                                   color: themeProvider.quaternaryColor,
                                   size: 20),
-                              onPressed: _resetConversation,
+                              onPressed: () {
+                                widget.deletePageChatMessageCallback(
+                                  widget.currentPageNumber.value,
+                                  widget.pptId,
+                                );
+                              },
                             ),
                             IconButton(
                               icon: Icon(Icons.close,
