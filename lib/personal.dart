@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'dart:convert';
+import 'api_user.dart' as ApiUser;
 
 class ThemeProvider with ChangeNotifier {
   bool _isDarkMode = false;
@@ -43,50 +45,108 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
   @override
   void initState() {
     super.initState();
-    _nameController.text = widget.userId.toString();
-    _emailController.text = 'test@gmail.com';
+    get_user_detail(widget.userId);
+    // _nameController.text = widget.userId.toString();
+    // _emailController.text = 'test@gmail.com';
   }
 
-  void _save() {
+  void _save() async {
     final String name = _nameController.text;
     final String email = _emailController.text;
     final String oldPassword = _oldPasswordController.text;
     final String newPassword = _newPasswordController.text;
     final String confirmPassword = _confirmPasswordController.text;
 
-    if (name.isNotEmpty && email.isNotEmpty && oldPassword.isNotEmpty && newPassword.isNotEmpty && confirmPassword.isNotEmpty) {
-      if (oldPassword != '12345678') {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('舊密碼錯誤')),
-        );
-      } else if (newPassword != confirmPassword) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('密碼不一致')),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('保存成功!')),
-        );
-        _oldPasswordController.text = '';
-        _newPasswordController.text = '';
-        _confirmPasswordController.text = '';
-      }
-    } else {
+    // if (name.isNotEmpty && email.isNotEmpty && oldPassword.isNotEmpty && newPassword.isNotEmpty && confirmPassword.isNotEmpty) {
+      // if (oldPassword != '12345678') {
+      //   ScaffoldMessenger.of(context).showSnackBar(
+      //     const SnackBar(content: Text('舊密碼錯誤')),
+      //   );
+      // } else if (newPassword != confirmPassword) {
+      //   ScaffoldMessenger.of(context).showSnackBar(
+      //     const SnackBar(content: Text('密碼不一致')),
+      //   );
+      // } else {
+      //   ScaffoldMessenger.of(context).showSnackBar(
+      //     const SnackBar(content: Text('保存成功!')),
+      //   );
+      //   _oldPasswordController.text = '';
+      //   _newPasswordController.text = '';
+      //   _confirmPasswordController.text = '';
+      // }
+    if (newPassword != confirmPassword) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('請輸入所有欄位')),
+        const SnackBar(content: Text('密碼不一致')),
       );
     }
+    else {
+      try {
+        print(widget.userId);
+        print("$name, $email, $oldPassword, $newPassword");
+        final response = 
+          await ApiUser.ApiService.user_update(widget.userId, name, email, oldPassword, newPassword);
+        
+        if (response.statusCode == 200) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('保存成功!'),
+              duration: Duration(seconds: 1),
+            ),
+          );
+        }             
+      } catch (e) {
+        print('Failed to update user: $e');
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('保存失敗!'),
+            duration: Duration(seconds: 1),
+          ),
+        );
+      
+      }
+      finally {
+        _oldPasswordController.text = "";
+        _newPasswordController.text = "";
+        _confirmPasswordController.text = "";
+      }
+        
+    }
+      
+    // } else {
+    //   ScaffoldMessenger.of(context).showSnackBar(
+    //     const SnackBar(
+    //       content: Text('請輸入所有欄位'),
+    //       duration: Duration(seconds: 1),
+    //     ),
+    //   );
+    // }
   }
 
   void _logout() {
     Navigator.pushReplacementNamed(context, '/');
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('登出成功!')),
+      const SnackBar(
+        content: Text('登出成功!'),
+        duration: Duration(seconds: 1),
+      ),
     );
   }
 
   void _toggleDarkMode() {
     Provider.of<ThemeProvider>(context, listen: false).toggleTheme();
+  }
+
+  void get_user_detail(int user_id) async {
+    try {
+      final response = await ApiUser.ApiService.fetchModels(user_id);
+      final decodedResponse = jsonDecode(response.body);
+      if (response.statusCode == 200) {
+        _nameController.text = decodedResponse[0]['user_name'];
+        _emailController.text = decodedResponse[0]['user_account'];
+      }
+    } catch (e) {
+      print('Failed to delete message: $e');
+    }
   }
 
   Widget build(BuildContext context) {
