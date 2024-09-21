@@ -43,7 +43,7 @@ class _LoginPageState extends State<LogInPage> {
     }
     catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('error : worng account or password ')),
+        SnackBar(content: Text('error : 帳號或密碼錯誤')),
       );
     }
     
